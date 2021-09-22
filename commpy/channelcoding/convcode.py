@@ -159,6 +159,8 @@ class Trellis:
         if code_type == 'rsc':
             for i in range(self.k):
                 g_matrix[i][i] = feedback
+        
+        self.code_type = code_type
 
         self.total_memory = memory.sum()
         self.number_states = pow(2, self.total_memory)

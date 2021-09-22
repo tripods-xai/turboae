@@ -15,7 +15,7 @@ import scipy.stats
 
 
 #from scipy import stats
-import tensorflow.keras.backend as K
+import keras.backend as K
 import tensorflow as tf
 
 #######################################
@@ -28,7 +28,7 @@ def deint(in_array, p_array):
     return out_array
 
 def intleave(in_array, p_array):
-    out_array = np.array([in_array[x] for x in p_array])
+    out_array = np.array(map(lambda x: in_array[x], p_array))
     return out_array
 
 def direct_subtract(in1,in2):
@@ -239,7 +239,7 @@ def corrupt_signal(input_signal, noise_type, sigma = 1.0,
         corrupted_signal = 2.0*input_signal-1.0 + noise
 
     else:
-        print('[Warning][Noise Generator]noise_type noty specified!')
+        print '[Warning][Noise Generator]noise_type noty specified!'
         noise = sigma * np.random.standard_normal(data_shape)
         corrupted_signal = 2.0*input_signal-1.0 + noise
 
@@ -320,7 +320,7 @@ def build_rnn_data_feed(num_block, block_len, noiser, codec, is_all_zero = False
         TBD, noise model shall be open to other user, for them to train their own decoder.
         '''
 
-        print('[Debug] Customize noise model not supported yet')
+        print '[Debug] Customize noise model not supported yet'
     else:  # awgn
         pass
 
@@ -405,7 +405,7 @@ def get_test_sigmas(snr_start, snr_end, snr_points):
 
 
     SNRS = SNRS_dB
-    print('[testing] SNR range in dB ', SNRS)
+    print '[testing] SNR range in dB ', SNRS
 
     return SNRS, test_sigmas
 

@@ -5,7 +5,8 @@
 
 """ Interleavers and De-interleavers """
 
-from numpy import array, arange, zeros
+import numpy as np
+from numpy import array, arange, zeros, vectorize
 from numpy.random import mtrand
 
 __all__ = ['RandInterlv']
@@ -27,7 +28,7 @@ class _Interleaver:
 
         """
 
-        out_array = array(map(lambda x: in_array[x], self.p_array))
+        out_array = in_array[self.p_array]
         return out_array
 
     def deinterlv(self, in_array):

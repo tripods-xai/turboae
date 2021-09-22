@@ -8,11 +8,11 @@ import numpy as np
 import time
 import sys
 
-from channelcoding import convcode as cc
-from channelcoding import interleavers as RandInterlv
+import channelcoding.convcode as cc
+import channelcoding.interleavers as RandInterlv
 
 from utilities import hamming_dist
-from channelcoding import turbo
+import channelcoding.turbo as turbo
 
 
 import multiprocessing as mp
@@ -55,8 +55,8 @@ def get_args():
     parser.add_argument('-id', type=str, default=str(np.random.random())[2:8])
 
     args = parser.parse_args()
-    print(args)
-    print('[ID]', args.id)
+    print args
+    print '[ID]', args.id
     return args
 
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     generator_matrix = np.array([[args.enc1, args.enc2]])   # Encoder of convolutional encoder
     feedback = args.feedback                                # Feedback of convolutional encoder
 
-    print('[testing] Turbo Code Encoder: G: ', generator_matrix,'Feedback: ', feedback,  'M: ', M)
+    print '[testing] Turbo Code Encoder: G: ', generator_matrix,'Feedback: ', feedback,  'M: ', M
     trellis1 = cc.Trellis(M, generator_matrix,feedback=feedback)
     trellis2 = cc.Trellis(M, generator_matrix,feedback=feedback)
     interleaver = RandInterlv.RandInterlv(args.block_len, 0)
@@ -85,11 +85,10 @@ if __name__ == '__main__':
 
     tic = time.time()
 
-    def turbo_compute(xxx_todo_changeme):
+    def turbo_compute((idx, x)):
         '''
         Compute Turbo Decoding in 1 iterations for one SNR point.
         '''
-        (idx, x) = xxx_todo_changeme
         np.random.seed()
         message_bits = np.random.randint(0, 2, args.block_len)
         [sys, par1, par2] = turbo.turbo_encode(message_bits, trellis1, trellis2, interleaver)
@@ -128,29 +127,28 @@ if __name__ == '__main__':
     map_nb_errors = np.zeros(test_sigmas.shape)
     nb_block_no_errors = np.zeros(test_sigmas.shape)
 
-    for idx in range(len(test_sigmas)):
+    for idx in xrange(len(test_sigmas)):
         start_time = time.time()
-        # pool = mp.Pool(processes=args.num_cpu)
-        # results = pool.map(turbo_compute, [(idx,x) for x in range(int(args.num_block))])
-        results = map(turbo_compute, [(idx,x) for x in range(int(args.num_block))])
+        pool = mp.Pool(processes=args.num_cpu)
+        results = pool.map(turbo_compute, [(idx,x) for x in xrange(int(args.num_block))])
 
         for result in results:
             if result == 0:
                 nb_block_no_errors[idx] = nb_block_no_errors[idx]+1
 
         nb_errors[idx]+= sum(results)
-        print('[testing]SNR: ' , snrs[idx])
-        print('[testing]BER: ', sum(results)/float(args.block_len*args.num_block))
-        print('[testing]BLER: ', 1.0 - nb_block_no_errors[idx]/args.num_block)
+        print '[testing]SNR: ' , snrs[idx]
+        print '[testing]BER: ', sum(results)/float(args.block_len*args.num_block)
+        print '[testing]BLER: ', 1.0 - nb_block_no_errors[idx]/args.num_block
         commpy_res_ber.append(sum(results)/float(args.block_len*args.num_block))
         commpy_res_bler.append(1.0 - nb_block_no_errors[idx]/args.num_block)
         end_time = time.time()
-        print('[testing] This SNR runnig time is', str(end_time-start_time))
+        print '[testing] This SNR runnig time is', str(end_time-start_time)
 
 
-    print('[Result]SNR: ', snrs)
-    print('[Result]BER', commpy_res_ber)
-    print('[Result]BLER', commpy_res_bler)
+    print '[Result]SNR: ', snrs
+    print '[Result]BER', commpy_res_ber
+    print '[Result]BLER', commpy_res_bler
 
     toc = time.time()
-    print('[Result]Total Running time:', toc-tic)
+    print '[Result]Total Running time:', toc-tic
