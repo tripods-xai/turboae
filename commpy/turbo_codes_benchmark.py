@@ -15,7 +15,9 @@ from utilities import hamming_dist
 from channelcoding import turbo
 
 
-import multiprocessing as mp
+# import multiprocessing as mp
+from tqdm.contrib.concurrent import process_map
+from tqdm import tqdm
 
 
 def get_args():
@@ -53,6 +55,8 @@ def get_args():
     parser.add_argument('-v',                 type=float,   default=5.0)
 
     parser.add_argument('-id', type=str, default=str(np.random.random())[2:8])
+
+    parser.add_argument('--debug', action='store_true', help='Runs in debug mode w/o multiprocessing')
 
     args = parser.parse_args()
     print(args)
@@ -130,9 +134,10 @@ if __name__ == '__main__':
 
     for idx in range(len(test_sigmas)):
         start_time = time.time()
-        # pool = mp.Pool(processes=args.num_cpu)
-        # results = pool.map(turbo_compute, [(idx,x) for x in range(int(args.num_block))])
-        results = map(turbo_compute, [(idx,x) for x in range(int(args.num_block))])
+        if args.debug:
+            results = tqdm(turbo_compute, [(idx,x) for x in range(int(args.num_block))])
+        else:
+            results = process_map(turbo_compute, [(idx,x) for x in range(int(args.num_block))], max_workers=args.num_cpu, chunksize=100)
 
         for result in results:
             if result == 0:
