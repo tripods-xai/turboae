@@ -6,7 +6,10 @@ from utils import  corrupt_signal, snr_db2sigma, get_test_sigmas
 
 import numpy as np
 import time
+from datetime import datetime
 import sys
+import os
+from pathlib import Path
 
 from channelcoding import convcode as cc
 from channelcoding import interleavers as RandInterlv
@@ -14,10 +17,10 @@ from channelcoding import interleavers as RandInterlv
 from utilities import hamming_dist
 from channelcoding import turbo
 
-
-# import multiprocessing as mp
 from tqdm.contrib.concurrent import process_map
 from tqdm import tqdm
+
+import plotly.express as px
 
 
 def get_args():
@@ -55,7 +58,9 @@ def get_args():
     parser.add_argument('-v',                 type=float,   default=5.0)
 
     parser.add_argument('-id', type=str, default=str(np.random.random())[2:8])
-
+    
+    parser.add_argument('--plot', action='store_true', help="Create a plot when complete")
+    parser.add_argument('--show_plot', action='store_true', help="Show plot when complete")
     parser.add_argument('--debug', action='store_true', help='Runs in debug mode w/o multiprocessing')
 
     args = parser.parse_args()
@@ -63,7 +68,7 @@ def get_args():
     print('[ID]', args.id)
     return args
 
-
+assert Path(os.getcwd()).match("turboae/commpy"), 'This file must be run from the commpy directory.'
 
 if __name__ == '__main__':
     args = get_args()
@@ -159,3 +164,16 @@ if __name__ == '__main__':
 
     toc = time.time()
     print('[Result]Total Running time:', toc-tic)
+
+    if args.plot:
+        model_title = f'Turbo-{args.enc1}{args.enc2}{args.feedback}'
+        fig = px.line(
+                x=snrs, y=commpy_res_ber, 
+                title=f'{model_title} BER vs. SNR', 
+                labels={'x': 'SNR', 'y': 'BER'}, log_y=True
+            )
+        
+        time_format = datetime.now().strftime('%Y-%m-%d.%H-%M-%S')
+        fig.write_image(f'../images/{model_title}.{time_format}.png')
+        if args.show_plot:
+            fig.show()
