@@ -18,7 +18,7 @@ from utilities import hamming_dist
 from channelcoding import turbo
 
 from tqdm.contrib.concurrent import process_map
-from tqdm import tqdm
+from tqdm import trange
 
 import plotly.express as px
 
@@ -140,7 +140,7 @@ if __name__ == '__main__':
     for idx in range(len(test_sigmas)):
         start_time = time.time()
         if args.debug:
-            results = tqdm(turbo_compute, [(idx,x) for x in range(int(args.num_block))])
+            results = [turbo_compute((idx, x)) for x in trange(int(args.num_block))]
         else:
             results = process_map(turbo_compute, [(idx,x) for x in range(int(args.num_block))], max_workers=args.num_cpu, chunksize=100)
 
