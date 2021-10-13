@@ -387,25 +387,32 @@ def snr_sigma2db(sigma_snr):
     SNR          = -10*np.log10(sigma_snr**2)
     return SNR
 
+def snr2sigma(snr):
+    return math.sqrt(10 ** (-snr / 10))
+
 def get_test_sigmas(snr_start, snr_end, snr_points):
     SNR_dB_start_Eb = snr_start
     SNR_dB_stop_Eb = snr_end
     SNR_points = snr_points
 
-    snr_interval = (SNR_dB_stop_Eb - SNR_dB_start_Eb)* 1.0 /  (SNR_points-1)
-    SNRS_dB = [snr_interval* item + SNR_dB_start_Eb for item in range(SNR_points)]
-    SNRS_dB_Es = [item + 10*np.log10(1.0/2.0) for item in SNRS_dB]
+    # snr_interval = (SNR_dB_stop_Eb - SNR_dB_start_Eb)* 1.0 /  (SNR_points-1)
+    # SNRS_dB = [snr_interval* item + SNR_dB_start_Eb for item in range(SNR_points)]
+    SNRS_dB = np.linspace(SNR_dB_start_Eb, SNR_dB_stop_Eb, snr_points)
+    # SNRS_dB_Es = [item + 10*np.log10(1.0/2.0) for item in SNRS_dB]
+    test_sigmas = np.array([snr2sigma(snr) for snr in SNRS_dB])
 
     # my setup for SNR
-    test_sigmas = np.array([np.sqrt(1/(2*10**(float(item)/float(10)))) for item in SNRS_dB_Es])
+    # test_sigmas = np.array([np.sqrt(1/(2*10**(float(item)/float(10)))) for item in SNRS_dB_Es])
     #test_sigmas = np.array([(10**(-item*1.0/20))*math.sqrt(1.5) for item in SNRS_dB])
 
     # Turbo CRC SNR setup.
-    test_sigmas = np.array([math.sqrt(0.5/((1.0/3)*(10.0**(0.1*item)))) for item in SNRS_dB])
+    # test_sigmas = np.array([math.sqrt(0.5/((1.0/3)*(10.0**(0.1*item)))) for item in SNRS_dB])
 
 
     SNRS = SNRS_dB
     print('[testing] SNR range in dB ', SNRS)
+    print(f'[testing] Test sigmas are {test_sigmas}')
+    print(f'[sanity check]: SNRs for sigmas are {[snr_sigma2db(sig) for sig in test_sigmas]}')
 
     return SNRS, test_sigmas
 
