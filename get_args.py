@@ -224,7 +224,13 @@ def get_args():
     parser.add_argument('--is_k_same_code', action='store_true', default=False,
                         help='train with same code for multiple times')
     parser.add_argument('-k_same_code', type = int, default=2, help = 'add term to maxBCE loss, only wokr with maxBCE loss')
-
+    
+    parser.add_argument('--onnx_save_decoder', action='store_true')
+    parser.add_argument('--test_onnx_decoder', action='store_true')
+    parser.add_argument('--onnx_decoder_path', type=str, default='')
+    parser.add_argument('--examine', action='store_true')
+    parser.add_argument('--test_compare', action='store_true')
+    parser.add_argument('--compare_encoders', action='store_true')
 
     args = parser.parse_args()
 

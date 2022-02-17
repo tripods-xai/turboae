@@ -153,10 +153,14 @@ class DEC_LargeRNN(torch.nn.Module):
 # 1D CNN same shape decoder
 ##################################################
 
+def is_onnx(args):
+    return args.onnx_save_decoder or args.test_onnx_decoder
+
 from encoders import SameShapeConv1d, DenseSameShapeConv1d
 class DEC_LargeCNN(torch.nn.Module):
     def __init__(self, args, p_array):
         super(DEC_LargeCNN, self).__init__()
+        print("Using DEC_LargeCNN")
         self.args = args
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
@@ -190,6 +194,10 @@ class DEC_LargeCNN(torch.nn.Module):
                 self.dec2_outputs.append(torch.nn.Linear(args.dec_num_unit, 1))
             else:
                 self.dec2_outputs.append(torch.nn.Linear(args.dec_num_unit, args.num_iter_ft))
+        
+        self.register_buffer('dec_num_layer', torch.tensor(args.dec_num_layer))
+        self.register_buffer('num_iteration', torch.tensor(self.args.num_iteration))
+        self.register_buffer('num_iter_ft', torch.tensor(self.args.num_iter_ft))
 
     def set_parallel(self):
         for idx in range(self.args.num_iteration):
@@ -205,26 +213,42 @@ class DEC_LargeCNN(torch.nn.Module):
 
     def forward(self, received):
 
-        if self.args.is_variable_block_len:
-            block_len = received.shape[1]
-            # reset interleaver
-            if self.args.is_interleave != 0:           # fixed interleaver.
-                seed = np.random.randint(0, self.args.is_interleave)
-                rand_gen = mtrand.RandomState(seed)
-                p_array = rand_gen.permutation(arange(block_len))
-                self.set_interleaver(p_array)
+        if not is_onnx(self.args):
+            print("WRONG")
+            if self.args.is_variable_block_len:
+                block_len = received.shape[1]
+                # reset interleaver
+                if self.args.is_interleave != 0:           # fixed interleaver.
+                    seed = np.random.randint(0, self.args.is_interleave)
+                    rand_gen = mtrand.RandomState(seed)
+                    p_array = rand_gen.permutation(arange(block_len))
+                    self.set_interleaver(p_array)
+            else:
+                block_len = self.args.block_len
         else:
-            block_len = self.args.block_len
+            assert not self.args.is_variable_block_len
 
         received = received.type(torch.FloatTensor).to(self.this_device)
-        # Turbo Decoder
-        r_sys     = received[:,:,0].view((self.args.batch_size, block_len, 1))
-        r_sys_int = self.interleaver(r_sys)
-        r_par1    = received[:,:,1].view((self.args.batch_size, block_len, 1))
-        r_par2    = received[:,:,2].view((self.args.batch_size, block_len, 1))
+        if not is_onnx(self.args):
+            print("WRONG")
+            # Turbo Decoder
+            r_sys     = received[:,:,0].view((self.args.batch_size, block_len, 1))
+            r_sys_int = self.interleaver(r_sys)
+            r_par1    = received[:,:,1].view((self.args.batch_size, block_len, 1))
+            r_par2    = received[:,:,2].view((self.args.batch_size, block_len, 1))
+        else:
+            # Changed for ONNX conversion
+            r_sys     = received[:,:,0:1]
+            r_sys_int = self.interleaver(r_sys)
+            r_par1    = received[:,:,1:2]
+            r_par2    = received[:,:,2:3]
 
-        #num_iteration,
-        prior = torch.zeros((self.args.batch_size, block_len, self.args.num_iter_ft)).to(self.this_device)
+        if not is_onnx(self.args):
+            print("WRONG")
+            #num_iteration,
+            prior = torch.zeros((self.args.batch_size, block_len, self.args.num_iter_ft)).to(self.this_device)
+        else:
+            prior = torch.zeros((received.shape[0], received.shape[1], self.args.num_iter_ft)).to(self.this_device)  # For onnx
 
         for idx in range(self.args.num_iteration - 1):
             x_this_dec = torch.cat([r_sys, r_par1, prior], dim = 2)

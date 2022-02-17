@@ -1,10 +1,81 @@
 __author__ = 'yihanjiang'
 import torch
 import torch.nn.functional as F
-import commpy.channelcoding.interleavers as RandInterlv
+# import commpy.channelcoding.interleavers as RandInterlv
 import numpy as np
+from numpy import arange, zeros
+from numpy.random import mtrand
 
 from ste import STEQuantize as MyQuantize
+
+class _Interleaver:
+
+    def interlv(self, in_array):
+        """ Interleave input array using the specific interleaver.
+
+        Parameters
+        ----------
+        in_array : 1D ndarray of ints
+            Input data to be interleaved.
+
+        Returns
+        -------
+        out_array : 1D ndarray of ints
+            Interleaved output data.
+
+        """
+        out_array = in_array[self.p_array]
+        return out_array
+
+    def deinterlv(self, in_array):
+        """ De-interleave input array using the specific interleaver.
+
+        Parameters
+        ----------
+        in_array : 1D ndarray of ints
+            Input data to be de-interleaved.
+
+        Returns
+        -------
+        out_array : 1D ndarray of ints
+            De-interleaved output data.
+
+        """
+        out_array = zeros(len(in_array), in_array.dtype)
+        for index, element in enumerate(self.p_array):
+            out_array[element] = in_array[index]
+        return out_array
+
+
+class RandInterlv(_Interleaver):
+    """ Random Interleaver.
+
+    Parameters
+    ----------
+    length : int
+        Length of the interleaver.
+
+    seed : int
+        Seed to initialize the random number generator
+        which generates the random permutation for
+        interleaving.
+
+    Returns
+    -------
+    random_interleaver : RandInterlv object
+        A random interleaver object.
+
+    Note
+    ----
+    The random number generator is the
+    RandomState object from NumPy,
+    which uses the Mersenne Twister algorithm.
+
+    """
+    def __init__(self, length, seed):
+        rand_gen = mtrand.RandomState(seed)
+        self.p_array = rand_gen.permutation(arange(length))
+
 
 
 class Channel_AE(torch.nn.Module):
@@ -23,14 +94,14 @@ class Channel_AE(torch.nn.Module):
             pass
 
         elif self.args.is_same_interleaver == 0:
-            interleaver = RandInterlv.RandInterlv(self.args.block_len, np.random.randint(0, 1000))
+            interleaver = RandInterlv(self.args.block_len, np.random.randint(0, 1000))
 
             p_array = interleaver.p_array
             self.enc.set_interleaver(p_array)
             self.dec.set_interleaver(p_array)
 
         else:# self.args.is_same_interleaver == 1
-            interleaver = RandInterlv.RandInterlv(self.args.block_len, 0) # not random anymore!
+            interleaver = RandInterlv(self.args.block_len, 0) # not random anymore!
             p_array = interleaver.p_array
             self.enc.set_interleaver(p_array)
             self.dec.set_interleaver(p_array)
@@ -92,14 +163,14 @@ class Channel_ModAE(torch.nn.Module):
             pass
 
         elif self.args.is_same_interleaver == 0:
-            interleaver = RandInterlv.RandInterlv(self.args.block_len, np.random.randint(0, 1000))
+            interleaver = RandInterlv(self.args.block_len, np.random.randint(0, 1000))
 
             p_array = interleaver.p_array
             self.enc.set_interleaver(p_array)
             self.dec.set_interleaver(p_array)
 
         else:# self.args.is_same_interleaver == 1
-            interleaver = RandInterlv.RandInterlv(self.args.block_len, 0) # not random anymore!
+            interleaver = RandInterlv(self.args.block_len, 0) # not random anymore!
             p_array = interleaver.p_array
             self.enc.set_interleaver(p_array)
             self.dec.set_interleaver(p_array)

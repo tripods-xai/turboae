@@ -7,10 +7,11 @@ class Interleaver(torch.nn.Module):
     def __init__(self, args, p_array):
         super(Interleaver, self).__init__()
         self.args = args
-        self.p_array = torch.LongTensor(p_array).view(len(p_array))
+        # self.p_array = torch.LongTensor(p_array).view(len(p_array))
+        self.register_buffer('p_array', torch.LongTensor(p_array).view(len(p_array)))
 
     def set_parray(self, p_array):
-        self.p_array = torch.LongTensor(p_array).view(len(p_array))
+        self.p_array[:] = torch.LongTensor(p_array).view(len(p_array))
 
     def forward(self, inputs):
 
@@ -26,19 +27,20 @@ class DeInterleaver(torch.nn.Module):
         super(DeInterleaver, self).__init__()
         self.args = args
 
-        self.reverse_p_array = [0 for _ in range(len(p_array))]
+        reverse_p_array = [0 for _ in range(len(p_array))]
         for idx in range(len(p_array)):
-            self.reverse_p_array[p_array[idx]] = idx
+            reverse_p_array[p_array[idx]] = idx
 
-        self.reverse_p_array = torch.LongTensor(self.reverse_p_array).view(len(p_array))
+        # self.reverse_p_array = torch.LongTensor(self.reverse_p_array).view(len(p_array))
+        self.register_buffer('reverse_p_array', torch.LongTensor(reverse_p_array).view(len(p_array)))
 
     def set_parray(self, p_array):
 
-        self.reverse_p_array = [0 for _ in range(len(p_array))]
+        reverse_p_array = [0 for _ in range(len(p_array))]
         for idx in range(len(p_array)):
-            self.reverse_p_array[p_array[idx]] = idx
+            reverse_p_array[p_array[idx]] = idx
 
-        self.reverse_p_array = torch.LongTensor(self.reverse_p_array).view(len(p_array))
+        self.reverse_p_array[:] = torch.LongTensor(reverse_p_array).view(len(p_array))
 
     def forward(self, inputs):
         inputs = inputs.permute(1,0,2)

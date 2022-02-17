@@ -1,0 +1,628 @@
+Namespace(encoder='TurboAE_rate3_cnn', decoder='TurboAE_rate3_cnn', channel='awgn', vv=5, radar_prob=0.05, radar_power=5.0, bec_p=0.0, bsc_p=0.0, bec_p_dec=0.0, bsc_p_dec=0.0, train_enc_channel_low=2.0, train_enc_channel_high=2.0, train_dec_channel_low=-1.5, train_dec_channel_high=2.0, init_nw_weight='./models/dta_steq2_cnn2_cnn5_enctrain2_dectrainneg15_2.pt', code_rate_k=1, code_rate_n=3, enc_rnn='gru', dec_rnn='gru', num_iteration=6, extrinsic=1, num_iter_ft=5, is_interleave=1, is_same_interleaver=1, is_parallel=1, enc_kernel_size=5, dec_kernel_size=5, enc_num_layer=2, dec_num_layer=5, dec_num_unit=100, enc_num_unit=100, enc_act='elu', dec_act='linear', num_ber_puncture=5, joint_train=0, num_train_dec=5, num_train_enc=1, dropout=0.0, snr_test_start=-1.5, snr_test_end=4.0, snr_points=12, batch_size=500, num_epoch=0, test_ratio=1, block_len=100, block_len_low=10, block_len_high=200, is_variable_block_len=False, img_size=10, num_block=50000, test_channel_mode='block_norm_ste', train_channel_mode='block_norm_ste', enc_truncate_limit=0, mod_rate=2, mod_num_layer=1, mod_num_unit=20, demod_num_layer=1, demod_num_unit=20, mod_lr=0.005, demod_lr=0.005, num_train_mod=1, num_train_demod=5, mod_pc='block_power', no_code_norm=False, enc_quantize_level=2, enc_value_limit=1.0, enc_grad_limit=0.01, enc_clipping='both', optimizer='adam', dec_lr=0.0001, enc_lr=0.0001, momentum=0.9, loss='bce', ber_lambda=1.0, bce_lambda=1.0, focal_gamma=0.0, focal_alpha=1.0, lambda_maxBCE=0.01, no_cuda=True, rec_quantize=False, rec_quantize_level=2, rec_quantize_limit=1.0, print_pos_ber=False, print_pos_power=False, print_test_traj=True, precompute_norm_stats=False, is_k_same_code=False, k_same_code=2, onnx_save_decoder=True)
+using random interleaver [26 86  2 55 75 93 16 73 54 95 53 92 78 13  7 30 22 24 33  8 43 62  3 71
+ 45 48  6 99 82 76 60 80 90 68 51 27 18 56 63 74  1 61 42 41  4 15 17 40
+ 38  5 91 59  0 34 28 50 11 35 23 52 10 31 66 57 79 85 32 84 14 89 19 29
+ 49 97 98 69 20 94 72 77 25 37 81 46 39 65 58 12 88 70 87 36 21 83  9 96
+ 67 64 47 44] [18 29 64 92 72 87  5 15 12 17 61 76  9 78 80  7 33  6 37 74 79  1 45 28
+ 60 52 25 39 97 44 16 55 83 49 22 70 47  4 82 94 53 66 26 84 31 63  8 75
+ 98 57 71 99 86 96 69 24 30 13 40 56 68 95 81 19 38 91 54 32 51 85 11 89
+ 90 36 65 88 41 14 27 50 20 46 67 35 62  2 59 23 58 43 10  0 73 21 77 42
+  3 93 48 34]
+Using DEC_LargeCNN
+Channel_AE(
+  (enc): ENC_interCNN(
+    (enc_cnn_1): DataParallel(
+      (module): SameShapeConv1d(
+        (cnns): ModuleList(
+          (0): Conv1d(1, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+        )
+      )
+    )
+    (enc_cnn_2): DataParallel(
+      (module): SameShapeConv1d(
+        (cnns): ModuleList(
+          (0): Conv1d(1, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+        )
+      )
+    )
+    (enc_cnn_3): DataParallel(
+      (module): SameShapeConv1d(
+        (cnns): ModuleList(
+          (0): Conv1d(1, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+        )
+      )
+    )
+    (enc_linear_1): DataParallel(
+      (module): Linear(in_features=100, out_features=1, bias=True)
+    )
+    (enc_linear_2): DataParallel(
+      (module): Linear(in_features=100, out_features=1, bias=True)
+    )
+    (enc_linear_3): DataParallel(
+      (module): Linear(in_features=100, out_features=1, bias=True)
+    )
+    (interleaver): Interleaver()
+  )
+  (dec): DEC_LargeCNN(
+    (interleaver): Interleaver()
+    (deinterleaver): DeInterleaver()
+    (dec1_cnns): ModuleList(
+      (0): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (1): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (2): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (3): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (4): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (5): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+    )
+    (dec2_cnns): ModuleList(
+      (0): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (1): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (2): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (3): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (4): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (5): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+    )
+    (dec1_outputs): ModuleList(
+      (0): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (1): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (2): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (3): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (4): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (5): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+    )
+    (dec2_outputs): ModuleList(
+      (0): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (1): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (2): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (3): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (4): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (5): DataParallel(
+        (module): Linear(in_features=100, out_features=1, bias=True)
+      )
+    )
+  )
+)
+Model filename is dta_steq2_cnn2_cnn5_enctrain2_dectrainneg15_2
+graph(%received : Float(*, 100, 3, strides=[300, 3, 1], requires_grad=0, device=cpu),
+      %dec1_cnns.0.module.cnns.0.weight : Float(100, 7, 5, strides=[35, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.0.module.cnns.0.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.0.module.cnns.1.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.0.module.cnns.1.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.0.module.cnns.2.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.0.module.cnns.2.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.0.module.cnns.3.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.0.module.cnns.3.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.0.module.cnns.4.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.0.module.cnns.4.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.1.module.cnns.0.weight : Float(100, 7, 5, strides=[35, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.1.module.cnns.0.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.1.module.cnns.1.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.1.module.cnns.1.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.1.module.cnns.2.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.1.module.cnns.2.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.1.module.cnns.3.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.1.module.cnns.3.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.1.module.cnns.4.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.1.module.cnns.4.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.2.module.cnns.0.weight : Float(100, 7, 5, strides=[35, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.2.module.cnns.0.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.2.module.cnns.1.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.2.module.cnns.1.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.2.module.cnns.2.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.2.module.cnns.2.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.2.module.cnns.3.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.2.module.cnns.3.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.2.module.cnns.4.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.2.module.cnns.4.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.3.module.cnns.0.weight : Float(100, 7, 5, strides=[35, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.3.module.cnns.0.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.3.module.cnns.1.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.3.module.cnns.1.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.3.module.cnns.2.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.3.module.cnns.2.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.3.module.cnns.3.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.3.module.cnns.3.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.3.module.cnns.4.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.3.module.cnns.4.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.4.module.cnns.0.weight : Float(100, 7, 5, strides=[35, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.4.module.cnns.0.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.4.module.cnns.1.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.4.module.cnns.1.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.4.module.cnns.2.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.4.module.cnns.2.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.4.module.cnns.3.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.4.module.cnns.3.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.4.module.cnns.4.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.4.module.cnns.4.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.5.module.cnns.0.weight : Float(100, 7, 5, strides=[35, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.5.module.cnns.0.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.5.module.cnns.1.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.5.module.cnns.1.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.5.module.cnns.2.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.5.module.cnns.2.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.5.module.cnns.3.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.5.module.cnns.3.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_cnns.5.module.cnns.4.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec1_cnns.5.module.cnns.4.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.0.module.cnns.0.weight : Float(100, 7, 5, strides=[35, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.0.module.cnns.0.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.0.module.cnns.1.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.0.module.cnns.1.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.0.module.cnns.2.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.0.module.cnns.2.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.0.module.cnns.3.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.0.module.cnns.3.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.0.module.cnns.4.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.0.module.cnns.4.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.1.module.cnns.0.weight : Float(100, 7, 5, strides=[35, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.1.module.cnns.0.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.1.module.cnns.1.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.1.module.cnns.1.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.1.module.cnns.2.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.1.module.cnns.2.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.1.module.cnns.3.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.1.module.cnns.3.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.1.module.cnns.4.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.1.module.cnns.4.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.2.module.cnns.0.weight : Float(100, 7, 5, strides=[35, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.2.module.cnns.0.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.2.module.cnns.1.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.2.module.cnns.1.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.2.module.cnns.2.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.2.module.cnns.2.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.2.module.cnns.3.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.2.module.cnns.3.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.2.module.cnns.4.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.2.module.cnns.4.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.3.module.cnns.0.weight : Float(100, 7, 5, strides=[35, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.3.module.cnns.0.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.3.module.cnns.1.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.3.module.cnns.1.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.3.module.cnns.2.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.3.module.cnns.2.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.3.module.cnns.3.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.3.module.cnns.3.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.3.module.cnns.4.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.3.module.cnns.4.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.4.module.cnns.0.weight : Float(100, 7, 5, strides=[35, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.4.module.cnns.0.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.4.module.cnns.1.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.4.module.cnns.1.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.4.module.cnns.2.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.4.module.cnns.2.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.4.module.cnns.3.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.4.module.cnns.3.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.4.module.cnns.4.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.4.module.cnns.4.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.5.module.cnns.0.weight : Float(100, 7, 5, strides=[35, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.5.module.cnns.0.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.5.module.cnns.1.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.5.module.cnns.1.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.5.module.cnns.2.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.5.module.cnns.2.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.5.module.cnns.3.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.5.module.cnns.3.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec2_cnns.5.module.cnns.4.weight : Float(100, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu),
+      %dec2_cnns.5.module.cnns.4.bias : Float(100, strides=[1], requires_grad=1, device=cpu),
+      %dec1_outputs.0.module.bias : Float(5, strides=[1], requires_grad=1, device=cpu),
+      %dec1_outputs.1.module.bias : Float(5, strides=[1], requires_grad=1, device=cpu),
+      %dec1_outputs.2.module.bias : Float(5, strides=[1], requires_grad=1, device=cpu),
+      %dec1_outputs.3.module.bias : Float(5, strides=[1], requires_grad=1, device=cpu),
+      %dec1_outputs.4.module.bias : Float(5, strides=[1], requires_grad=1, device=cpu),
+      %dec1_outputs.5.module.bias : Float(5, strides=[1], requires_grad=1, device=cpu),
+      %dec2_outputs.0.module.bias : Float(5, strides=[1], requires_grad=1, device=cpu),
+      %dec2_outputs.1.module.bias : Float(5, strides=[1], requires_grad=1, device=cpu),
+      %dec2_outputs.2.module.bias : Float(5, strides=[1], requires_grad=1, device=cpu),
+      %dec2_outputs.3.module.bias : Float(5, strides=[1], requires_grad=1, device=cpu),
+      %dec2_outputs.4.module.bias : Float(5, strides=[1], requires_grad=1, device=cpu),
+      %dec2_outputs.5.module.bias : Float(1, strides=[1], requires_grad=1, device=cpu),
+      %408 : Long(1, strides=[1], requires_grad=0, device=cpu),
+      %409 : Float(100, 5, strides=[1, 100], requires_grad=0, device=cpu),
+      %410 : Float(100, 5, strides=[1, 100], requires_grad=0, device=cpu),
+      %411 : Float(100, 5, strides=[1, 100], requires_grad=0, device=cpu),
+      %412 : Float(100, 5, strides=[1, 100], requires_grad=0, device=cpu),
+      %413 : Float(100, 5, strides=[1, 100], requires_grad=0, device=cpu),
+      %414 : Float(100, 5, strides=[1, 100], requires_grad=0, device=cpu),
+      %415 : Float(100, 5, strides=[1, 100], requires_grad=0, device=cpu),
+      %416 : Float(100, 5, strides=[1, 100], requires_grad=0, device=cpu),
+      %417 : Float(100, 5, strides=[1, 100], requires_grad=0, device=cpu),
+      %418 : Float(100, 5, strides=[1, 100], requires_grad=0, device=cpu),
+      %419 : Float(100, 5, strides=[1, 100], requires_grad=0, device=cpu),
+      %420 : Float(100, 1, strides=[1, 100], requires_grad=0, device=cpu)):
+  %145 : Float(*, 100, 3, strides=[300, 3, 1], requires_grad=0, device=cpu) = onnx::Cast[to=1](%received) # /home/abhijeet/dev/turboae/decoders.py:224:0
+  %146 : Float(*, 100, 3, strides=[300, 3, 1], requires_grad=0, device=cpu) = onnx::Cast[to=1](%145) # /home/abhijeet/dev/turboae/decoders.py:237:0
+  %147 : Float(*, 100, 1, strides=[300, 3, 1], requires_grad=0, device=cpu) = onnx::Slice[axes=[2], ends=[1], starts=[0]](%146) # /home/abhijeet/dev/turboae/decoders.py:234:0
+  %148 : Float(100, *, 1, strides=[3, 300, 1], requires_grad=0, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%147) # /home/abhijeet/dev/turboae/interleavers.py:17:0
+  %149 : Long(100, strides=[1], requires_grad=0, device=cpu) = onnx::Constant[value=<Tensor>]() # /home/abhijeet/dev/turboae/interleavers.py:18:0
+  %150 : Float(*, *, *, strides=[50, 1, 1], requires_grad=0, device=cpu) = onnx::Gather[axis=0](%148, %149) # /home/abhijeet/dev/turboae/interleavers.py:18:0
+  %151 : Float(*, *, *, strides=[1, 50, 1], requires_grad=0, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%150) # /home/abhijeet/dev/turboae/interleavers.py:19:0
+  %152 : Float(*, 100, 1, strides=[300, 3, 1], requires_grad=0, device=cpu) = onnx::Slice[axes=[2], ends=[2], starts=[1]](%146) # /home/abhijeet/dev/turboae/decoders.py:236:0
+  %153 : Float(*, 100, 1, strides=[300, 3, 1], requires_grad=0, device=cpu) = onnx::Slice[axes=[2], ends=[3], starts=[2]](%146) # /home/abhijeet/dev/turboae/decoders.py:237:0
+  %154 : Long(3, strides=[1], device=cpu) = onnx::Shape(%146)
+  %155 : Long(device=cpu) = onnx::Constant[value={0}]()
+  %156 : Long(device=cpu) = onnx::Gather[axis=0](%154, %155) # /home/abhijeet/dev/turboae/decoders.py:244:0
+  %157 : Long(3, strides=[1], device=cpu) = onnx::Shape(%146)
+  %158 : Long(device=cpu) = onnx::Constant[value={1}]()
+  %159 : Long(device=cpu) = onnx::Gather[axis=0](%157, %158) # /home/abhijeet/dev/turboae/decoders.py:244:0
+  %161 : Long(1, strides=[1], device=cpu) = onnx::Unsqueeze[axes=[0]](%156)
+  %162 : Long(1, strides=[1], device=cpu) = onnx::Unsqueeze[axes=[0]](%159)
+  %164 : Long(3, strides=[1], device=cpu) = onnx::Concat[axis=0](%161, %162, %408)
+  %165 : Float(*, *, *, strides=[500, 5, 1], requires_grad=0, device=cpu) = onnx::ConstantOfShape[value={0}](%164) # /home/abhijeet/dev/turboae/decoders.py:244:0
+  %166 : Float(*, *, *, strides=[500, 5, 1], requires_grad=0, device=cpu) = onnx::Cast[to=1](%165) # /home/abhijeet/dev/turboae/decoders.py:244:0
+  %167 : Float(*, 100, *, strides=[700, 7, 1], requires_grad=0, device=cpu) = onnx::Concat[axis=2](%147, %152, %166) # /home/abhijeet/dev/turboae/decoders.py:247:0
+  %168 : Float(*, *, 100, strides=[700, 1, 7], requires_grad=0, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%167) # /home/abhijeet/dev/turboae/cnn_utils.py:37:0
+  %169 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%168, %dec1_cnns.0.module.cnns.0.weight, %dec1_cnns.0.module.cnns.0.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %170 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%169) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %171 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%170, %dec1_cnns.0.module.cnns.1.weight, %dec1_cnns.0.module.cnns.1.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %172 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%171) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %173 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%172, %dec1_cnns.0.module.cnns.2.weight, %dec1_cnns.0.module.cnns.2.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %174 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%173) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %175 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%174, %dec1_cnns.0.module.cnns.3.weight, %dec1_cnns.0.module.cnns.3.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %176 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%175) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %177 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%176, %dec1_cnns.0.module.cnns.4.weight, %dec1_cnns.0.module.cnns.4.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %178 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%177) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %179 : Float(*, 100, 100, strides=[10000, 1, 100], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%178) # /home/abhijeet/dev/turboae/cnn_utils.py:45:0
+  %181 : Float(*, 100, 5, device=cpu) = onnx::MatMul(%179, %409)
+  %182 : Float(*, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Add(%dec1_outputs.0.module.bias, %181) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1848:0
+  %183 : Float(*, *, *, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Sub(%182, %166) # /home/abhijeet/dev/turboae/decoders.py:253:0
+  %184 : Float(*, *, *, strides=[5, 500, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%183) # /home/abhijeet/dev/turboae/interleavers.py:17:0
+  %185 : Float(*, *, *, strides=[250, 5, 1], requires_grad=1, device=cpu) = onnx::Gather[axis=0](%184, %149) # /home/abhijeet/dev/turboae/interleavers.py:18:0
+  %186 : Float(*, *, *, strides=[5, 250, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%185) # /home/abhijeet/dev/turboae/interleavers.py:19:0
+  %187 : Float(*, 100, *, strides=[700, 7, 1], requires_grad=1, device=cpu) = onnx::Concat[axis=2](%151, %153, %186) # /home/abhijeet/dev/turboae/decoders.py:257:0
+  %188 : Float(*, *, 100, strides=[700, 1, 7], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%187) # /home/abhijeet/dev/turboae/cnn_utils.py:37:0
+  %189 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%188, %dec2_cnns.0.module.cnns.0.weight, %dec2_cnns.0.module.cnns.0.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %190 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%189) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %191 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%190, %dec2_cnns.0.module.cnns.1.weight, %dec2_cnns.0.module.cnns.1.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %192 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%191) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %193 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%192, %dec2_cnns.0.module.cnns.2.weight, %dec2_cnns.0.module.cnns.2.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %194 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%193) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %195 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%194, %dec2_cnns.0.module.cnns.3.weight, %dec2_cnns.0.module.cnns.3.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %196 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%195) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %197 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%196, %dec2_cnns.0.module.cnns.4.weight, %dec2_cnns.0.module.cnns.4.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %198 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%197) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %199 : Float(*, 100, 100, strides=[10000, 1, 100], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%198) # /home/abhijeet/dev/turboae/cnn_utils.py:45:0
+  %201 : Float(*, 100, 5, device=cpu) = onnx::MatMul(%199, %410)
+  %202 : Float(*, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Add(%dec2_outputs.0.module.bias, %201) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1848:0
+  %203 : Float(*, *, *, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Sub(%202, %186) # /home/abhijeet/dev/turboae/decoders.py:264:0
+  %204 : Float(*, *, *, strides=[5, 500, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%203) # /home/abhijeet/dev/turboae/interleavers.py:44:0
+  %205 : Long(100, strides=[1], requires_grad=0, device=cpu) = onnx::Constant[value=<Tensor>]() # /home/abhijeet/dev/turboae/interleavers.py:45:0
+  %206 : Float(*, *, *, strides=[250, 5, 1], requires_grad=1, device=cpu) = onnx::Gather[axis=0](%204, %205) # /home/abhijeet/dev/turboae/interleavers.py:45:0
+  %207 : Float(*, *, *, strides=[5, 250, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%206) # /home/abhijeet/dev/turboae/interleavers.py:46:0
+  %208 : Float(*, 100, *, strides=[700, 7, 1], requires_grad=1, device=cpu) = onnx::Concat[axis=2](%147, %152, %207) # /home/abhijeet/dev/turboae/decoders.py:247:0
+  %209 : Float(*, *, 100, strides=[700, 1, 7], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%208) # /home/abhijeet/dev/turboae/cnn_utils.py:37:0
+  %210 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%209, %dec1_cnns.1.module.cnns.0.weight, %dec1_cnns.1.module.cnns.0.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %211 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%210) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %212 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%211, %dec1_cnns.1.module.cnns.1.weight, %dec1_cnns.1.module.cnns.1.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %213 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%212) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %214 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%213, %dec1_cnns.1.module.cnns.2.weight, %dec1_cnns.1.module.cnns.2.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %215 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%214) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %216 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%215, %dec1_cnns.1.module.cnns.3.weight, %dec1_cnns.1.module.cnns.3.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %217 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%216) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %218 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%217, %dec1_cnns.1.module.cnns.4.weight, %dec1_cnns.1.module.cnns.4.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %219 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%218) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %220 : Float(*, 100, 100, strides=[10000, 1, 100], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%219) # /home/abhijeet/dev/turboae/cnn_utils.py:45:0
+  %222 : Float(*, 100, 5, device=cpu) = onnx::MatMul(%220, %411)
+  %223 : Float(*, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Add(%dec1_outputs.1.module.bias, %222) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1848:0
+  %224 : Float(*, *, *, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Sub(%223, %207) # /home/abhijeet/dev/turboae/decoders.py:253:0
+  %225 : Float(*, *, *, strides=[5, 500, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%224) # /home/abhijeet/dev/turboae/interleavers.py:17:0
+  %226 : Float(*, *, *, strides=[250, 5, 1], requires_grad=1, device=cpu) = onnx::Gather[axis=0](%225, %149) # /home/abhijeet/dev/turboae/interleavers.py:18:0
+  %227 : Float(*, *, *, strides=[5, 250, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%226) # /home/abhijeet/dev/turboae/interleavers.py:19:0
+  %228 : Float(*, 100, *, strides=[700, 7, 1], requires_grad=1, device=cpu) = onnx::Concat[axis=2](%151, %153, %227) # /home/abhijeet/dev/turboae/decoders.py:257:0
+  %229 : Float(*, *, 100, strides=[700, 1, 7], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%228) # /home/abhijeet/dev/turboae/cnn_utils.py:37:0
+  %230 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%229, %dec2_cnns.1.module.cnns.0.weight, %dec2_cnns.1.module.cnns.0.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %231 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%230) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %232 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%231, %dec2_cnns.1.module.cnns.1.weight, %dec2_cnns.1.module.cnns.1.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %233 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%232) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %234 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%233, %dec2_cnns.1.module.cnns.2.weight, %dec2_cnns.1.module.cnns.2.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %235 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%234) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %236 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%235, %dec2_cnns.1.module.cnns.3.weight, %dec2_cnns.1.module.cnns.3.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %237 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%236) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %238 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%237, %dec2_cnns.1.module.cnns.4.weight, %dec2_cnns.1.module.cnns.4.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %239 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%238) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %240 : Float(*, 100, 100, strides=[10000, 1, 100], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%239) # /home/abhijeet/dev/turboae/cnn_utils.py:45:0
+  %242 : Float(*, 100, 5, device=cpu) = onnx::MatMul(%240, %412)
+  %243 : Float(*, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Add(%dec2_outputs.1.module.bias, %242) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1848:0
+  %244 : Float(*, *, *, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Sub(%243, %227) # /home/abhijeet/dev/turboae/decoders.py:264:0
+  %245 : Float(*, *, *, strides=[5, 500, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%244) # /home/abhijeet/dev/turboae/interleavers.py:44:0
+  %246 : Float(*, *, *, strides=[250, 5, 1], requires_grad=1, device=cpu) = onnx::Gather[axis=0](%245, %205) # /home/abhijeet/dev/turboae/interleavers.py:45:0
+  %247 : Float(*, *, *, strides=[5, 250, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%246) # /home/abhijeet/dev/turboae/interleavers.py:46:0
+  %248 : Float(*, 100, *, strides=[700, 7, 1], requires_grad=1, device=cpu) = onnx::Concat[axis=2](%147, %152, %247) # /home/abhijeet/dev/turboae/decoders.py:247:0
+  %249 : Float(*, *, 100, strides=[700, 1, 7], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%248) # /home/abhijeet/dev/turboae/cnn_utils.py:37:0
+  %250 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%249, %dec1_cnns.2.module.cnns.0.weight, %dec1_cnns.2.module.cnns.0.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %251 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%250) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %252 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%251, %dec1_cnns.2.module.cnns.1.weight, %dec1_cnns.2.module.cnns.1.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %253 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%252) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %254 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%253, %dec1_cnns.2.module.cnns.2.weight, %dec1_cnns.2.module.cnns.2.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %255 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%254) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %256 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%255, %dec1_cnns.2.module.cnns.3.weight, %dec1_cnns.2.module.cnns.3.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %257 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%256) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %258 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%257, %dec1_cnns.2.module.cnns.4.weight, %dec1_cnns.2.module.cnns.4.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %259 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%258) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %260 : Float(*, 100, 100, strides=[10000, 1, 100], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%259) # /home/abhijeet/dev/turboae/cnn_utils.py:45:0
+  %262 : Float(*, 100, 5, device=cpu) = onnx::MatMul(%260, %413)
+  %263 : Float(*, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Add(%dec1_outputs.2.module.bias, %262) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1848:0
+  %264 : Float(*, *, *, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Sub(%263, %247) # /home/abhijeet/dev/turboae/decoders.py:253:0
+  %265 : Float(*, *, *, strides=[5, 500, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%264) # /home/abhijeet/dev/turboae/interleavers.py:17:0
+  %266 : Float(*, *, *, strides=[250, 5, 1], requires_grad=1, device=cpu) = onnx::Gather[axis=0](%265, %149) # /home/abhijeet/dev/turboae/interleavers.py:18:0
+  %267 : Float(*, *, *, strides=[5, 250, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%266) # /home/abhijeet/dev/turboae/interleavers.py:19:0
+  %268 : Float(*, 100, *, strides=[700, 7, 1], requires_grad=1, device=cpu) = onnx::Concat[axis=2](%151, %153, %267) # /home/abhijeet/dev/turboae/decoders.py:257:0
+  %269 : Float(*, *, 100, strides=[700, 1, 7], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%268) # /home/abhijeet/dev/turboae/cnn_utils.py:37:0
+  %270 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%269, %dec2_cnns.2.module.cnns.0.weight, %dec2_cnns.2.module.cnns.0.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %271 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%270) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %272 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%271, %dec2_cnns.2.module.cnns.1.weight, %dec2_cnns.2.module.cnns.1.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %273 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%272) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %274 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%273, %dec2_cnns.2.module.cnns.2.weight, %dec2_cnns.2.module.cnns.2.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %275 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%274) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %276 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%275, %dec2_cnns.2.module.cnns.3.weight, %dec2_cnns.2.module.cnns.3.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %277 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%276) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %278 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%277, %dec2_cnns.2.module.cnns.4.weight, %dec2_cnns.2.module.cnns.4.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %279 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%278) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %280 : Float(*, 100, 100, strides=[10000, 1, 100], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%279) # /home/abhijeet/dev/turboae/cnn_utils.py:45:0
+  %282 : Float(*, 100, 5, device=cpu) = onnx::MatMul(%280, %414)
+  %283 : Float(*, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Add(%dec2_outputs.2.module.bias, %282) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1848:0
+  %284 : Float(*, *, *, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Sub(%283, %267) # /home/abhijeet/dev/turboae/decoders.py:264:0
+  %285 : Float(*, *, *, strides=[5, 500, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%284) # /home/abhijeet/dev/turboae/interleavers.py:44:0
+  %286 : Float(*, *, *, strides=[250, 5, 1], requires_grad=1, device=cpu) = onnx::Gather[axis=0](%285, %205) # /home/abhijeet/dev/turboae/interleavers.py:45:0
+  %287 : Float(*, *, *, strides=[5, 250, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%286) # /home/abhijeet/dev/turboae/interleavers.py:46:0
+  %288 : Float(*, 100, *, strides=[700, 7, 1], requires_grad=1, device=cpu) = onnx::Concat[axis=2](%147, %152, %287) # /home/abhijeet/dev/turboae/decoders.py:247:0
+  %289 : Float(*, *, 100, strides=[700, 1, 7], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%288) # /home/abhijeet/dev/turboae/cnn_utils.py:37:0
+  %290 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%289, %dec1_cnns.3.module.cnns.0.weight, %dec1_cnns.3.module.cnns.0.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %291 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%290) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %292 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%291, %dec1_cnns.3.module.cnns.1.weight, %dec1_cnns.3.module.cnns.1.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %293 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%292) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %294 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%293, %dec1_cnns.3.module.cnns.2.weight, %dec1_cnns.3.module.cnns.2.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %295 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%294) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %296 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%295, %dec1_cnns.3.module.cnns.3.weight, %dec1_cnns.3.module.cnns.3.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %297 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%296) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %298 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%297, %dec1_cnns.3.module.cnns.4.weight, %dec1_cnns.3.module.cnns.4.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %299 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%298) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %300 : Float(*, 100, 100, strides=[10000, 1, 100], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%299) # /home/abhijeet/dev/turboae/cnn_utils.py:45:0
+  %302 : Float(*, 100, 5, device=cpu) = onnx::MatMul(%300, %415)
+  %303 : Float(*, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Add(%dec1_outputs.3.module.bias, %302) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1848:0
+  %304 : Float(*, *, *, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Sub(%303, %287) # /home/abhijeet/dev/turboae/decoders.py:253:0
+  %305 : Float(*, *, *, strides=[5, 500, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%304) # /home/abhijeet/dev/turboae/interleavers.py:17:0
+  %306 : Float(*, *, *, strides=[250, 5, 1], requires_grad=1, device=cpu) = onnx::Gather[axis=0](%305, %149) # /home/abhijeet/dev/turboae/interleavers.py:18:0
+  %307 : Float(*, *, *, strides=[5, 250, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%306) # /home/abhijeet/dev/turboae/interleavers.py:19:0
+  %308 : Float(*, 100, *, strides=[700, 7, 1], requires_grad=1, device=cpu) = onnx::Concat[axis=2](%151, %153, %307) # /home/abhijeet/dev/turboae/decoders.py:257:0
+  %309 : Float(*, *, 100, strides=[700, 1, 7], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%308) # /home/abhijeet/dev/turboae/cnn_utils.py:37:0
+  %310 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%309, %dec2_cnns.3.module.cnns.0.weight, %dec2_cnns.3.module.cnns.0.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %311 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%310) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %312 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%311, %dec2_cnns.3.module.cnns.1.weight, %dec2_cnns.3.module.cnns.1.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %313 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%312) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %314 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%313, %dec2_cnns.3.module.cnns.2.weight, %dec2_cnns.3.module.cnns.2.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %315 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%314) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %316 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%315, %dec2_cnns.3.module.cnns.3.weight, %dec2_cnns.3.module.cnns.3.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %317 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%316) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %318 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%317, %dec2_cnns.3.module.cnns.4.weight, %dec2_cnns.3.module.cnns.4.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %319 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%318) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %320 : Float(*, 100, 100, strides=[10000, 1, 100], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%319) # /home/abhijeet/dev/turboae/cnn_utils.py:45:0
+  %322 : Float(*, 100, 5, device=cpu) = onnx::MatMul(%320, %416)
+  %323 : Float(*, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Add(%dec2_outputs.3.module.bias, %322) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1848:0
+  %324 : Float(*, *, *, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Sub(%323, %307) # /home/abhijeet/dev/turboae/decoders.py:264:0
+  %325 : Float(*, *, *, strides=[5, 500, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%324) # /home/abhijeet/dev/turboae/interleavers.py:44:0
+  %326 : Float(*, *, *, strides=[250, 5, 1], requires_grad=1, device=cpu) = onnx::Gather[axis=0](%325, %205) # /home/abhijeet/dev/turboae/interleavers.py:45:0
+  %327 : Float(*, *, *, strides=[5, 250, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%326) # /home/abhijeet/dev/turboae/interleavers.py:46:0
+  %328 : Float(*, 100, *, strides=[700, 7, 1], requires_grad=1, device=cpu) = onnx::Concat[axis=2](%147, %152, %327) # /home/abhijeet/dev/turboae/decoders.py:247:0
+  %329 : Float(*, *, 100, strides=[700, 1, 7], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%328) # /home/abhijeet/dev/turboae/cnn_utils.py:37:0
+  %330 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%329, %dec1_cnns.4.module.cnns.0.weight, %dec1_cnns.4.module.cnns.0.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %331 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%330) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %332 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%331, %dec1_cnns.4.module.cnns.1.weight, %dec1_cnns.4.module.cnns.1.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %333 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%332) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %334 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%333, %dec1_cnns.4.module.cnns.2.weight, %dec1_cnns.4.module.cnns.2.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %335 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%334) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %336 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%335, %dec1_cnns.4.module.cnns.3.weight, %dec1_cnns.4.module.cnns.3.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %337 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%336) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %338 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%337, %dec1_cnns.4.module.cnns.4.weight, %dec1_cnns.4.module.cnns.4.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %339 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%338) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %340 : Float(*, 100, 100, strides=[10000, 1, 100], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%339) # /home/abhijeet/dev/turboae/cnn_utils.py:45:0
+  %342 : Float(*, 100, 5, device=cpu) = onnx::MatMul(%340, %417)
+  %343 : Float(*, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Add(%dec1_outputs.4.module.bias, %342) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1848:0
+  %344 : Float(*, *, *, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Sub(%343, %327) # /home/abhijeet/dev/turboae/decoders.py:253:0
+  %345 : Float(*, *, *, strides=[5, 500, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%344) # /home/abhijeet/dev/turboae/interleavers.py:17:0
+  %346 : Float(*, *, *, strides=[250, 5, 1], requires_grad=1, device=cpu) = onnx::Gather[axis=0](%345, %149) # /home/abhijeet/dev/turboae/interleavers.py:18:0
+  %347 : Float(*, *, *, strides=[5, 250, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%346) # /home/abhijeet/dev/turboae/interleavers.py:19:0
+  %348 : Float(*, 100, *, strides=[700, 7, 1], requires_grad=1, device=cpu) = onnx::Concat[axis=2](%151, %153, %347) # /home/abhijeet/dev/turboae/decoders.py:257:0
+  %349 : Float(*, *, 100, strides=[700, 1, 7], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%348) # /home/abhijeet/dev/turboae/cnn_utils.py:37:0
+  %350 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%349, %dec2_cnns.4.module.cnns.0.weight, %dec2_cnns.4.module.cnns.0.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %351 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%350) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %352 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%351, %dec2_cnns.4.module.cnns.1.weight, %dec2_cnns.4.module.cnns.1.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %353 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%352) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %354 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%353, %dec2_cnns.4.module.cnns.2.weight, %dec2_cnns.4.module.cnns.2.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %355 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%354) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %356 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%355, %dec2_cnns.4.module.cnns.3.weight, %dec2_cnns.4.module.cnns.3.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %357 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%356) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %358 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%357, %dec2_cnns.4.module.cnns.4.weight, %dec2_cnns.4.module.cnns.4.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %359 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%358) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %360 : Float(*, 100, 100, strides=[10000, 1, 100], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%359) # /home/abhijeet/dev/turboae/cnn_utils.py:45:0
+  %362 : Float(*, 100, 5, device=cpu) = onnx::MatMul(%360, %418)
+  %363 : Float(*, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Add(%dec2_outputs.4.module.bias, %362) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1848:0
+  %364 : Float(*, *, *, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Sub(%363, %347) # /home/abhijeet/dev/turboae/decoders.py:264:0
+  %365 : Float(*, *, *, strides=[5, 500, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%364) # /home/abhijeet/dev/turboae/interleavers.py:44:0
+  %366 : Float(*, *, *, strides=[250, 5, 1], requires_grad=1, device=cpu) = onnx::Gather[axis=0](%365, %205) # /home/abhijeet/dev/turboae/interleavers.py:45:0
+  %367 : Float(*, *, *, strides=[5, 250, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%366) # /home/abhijeet/dev/turboae/interleavers.py:46:0
+  %368 : Float(*, 100, *, strides=[700, 7, 1], requires_grad=1, device=cpu) = onnx::Concat[axis=2](%147, %152, %367) # /home/abhijeet/dev/turboae/decoders.py:269:0
+  %369 : Float(*, *, 100, strides=[700, 1, 7], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%368) # /home/abhijeet/dev/turboae/cnn_utils.py:37:0
+  %370 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%369, %dec1_cnns.5.module.cnns.0.weight, %dec1_cnns.5.module.cnns.0.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %371 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%370) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %372 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%371, %dec1_cnns.5.module.cnns.1.weight, %dec1_cnns.5.module.cnns.1.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %373 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%372) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %374 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%373, %dec1_cnns.5.module.cnns.2.weight, %dec1_cnns.5.module.cnns.2.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %375 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%374) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %376 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%375, %dec1_cnns.5.module.cnns.3.weight, %dec1_cnns.5.module.cnns.3.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %377 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%376) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %378 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%377, %dec1_cnns.5.module.cnns.4.weight, %dec1_cnns.5.module.cnns.4.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %379 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%378) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %380 : Float(*, 100, 100, strides=[10000, 1, 100], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%379) # /home/abhijeet/dev/turboae/cnn_utils.py:45:0
+  %382 : Float(*, 100, 5, device=cpu) = onnx::MatMul(%380, %419)
+  %383 : Float(*, 100, 5, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Add(%dec1_outputs.5.module.bias, %382) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1848:0
+  %384 : Float(*, *, *, strides=[500, 5, 1], requires_grad=1, device=cpu) = onnx::Sub(%383, %367) # /home/abhijeet/dev/turboae/decoders.py:275:0
+  %385 : Float(*, *, *, strides=[5, 500, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%384) # /home/abhijeet/dev/turboae/interleavers.py:17:0
+  %386 : Float(*, *, *, strides=[250, 5, 1], requires_grad=1, device=cpu) = onnx::Gather[axis=0](%385, %149) # /home/abhijeet/dev/turboae/interleavers.py:18:0
+  %387 : Float(*, *, *, strides=[5, 250, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%386) # /home/abhijeet/dev/turboae/interleavers.py:19:0
+  %388 : Float(*, 100, *, strides=[700, 7, 1], requires_grad=1, device=cpu) = onnx::Concat[axis=2](%151, %153, %387) # /home/abhijeet/dev/turboae/decoders.py:279:0
+  %389 : Float(*, *, 100, strides=[700, 1, 7], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%388) # /home/abhijeet/dev/turboae/cnn_utils.py:37:0
+  %390 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%389, %dec2_cnns.5.module.cnns.0.weight, %dec2_cnns.5.module.cnns.0.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %391 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%390) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %392 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%391, %dec2_cnns.5.module.cnns.1.weight, %dec2_cnns.5.module.cnns.1.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %393 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%392) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %394 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%393, %dec2_cnns.5.module.cnns.2.weight, %dec2_cnns.5.module.cnns.2.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %395 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%394) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %396 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%395, %dec2_cnns.5.module.cnns.3.weight, %dec2_cnns.5.module.cnns.3.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %397 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%396) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %398 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Conv[dilations=[1], group=1, kernel_shape=[5], pads=[2, 2], strides=[1]](%397, %dec2_cnns.5.module.cnns.4.weight, %dec2_cnns.5.module.cnns.4.bias) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/modules/conv.py:297:0
+  %399 : Float(*, 100, 100, strides=[10000, 100, 1], requires_grad=1, device=cpu) = onnx::Elu[alpha=1.](%398) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1391:0
+  %400 : Float(*, 100, 100, strides=[10000, 1, 100], requires_grad=1, device=cpu) = onnx::Transpose[perm=[0, 2, 1]](%399) # /home/abhijeet/dev/turboae/cnn_utils.py:45:0
+  %402 : Float(*, 100, 1, device=cpu) = onnx::MatMul(%400, %420)
+  %403 : Float(*, 100, 1, strides=[100, 1, 1], requires_grad=1, device=cpu) = onnx::Add(%dec2_outputs.5.module.bias, %402) # /home/abhijeet/anaconda3/envs/turbo/lib/python3.9/site-packages/torch/nn/functional.py:1848:0
+  %404 : Float(100, *, 1, strides=[1, 100, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%403) # /home/abhijeet/dev/turboae/interleavers.py:44:0
+  %405 : Float(*, *, *, strides=[50, 1, 1], requires_grad=1, device=cpu) = onnx::Gather[axis=0](%404, %205) # /home/abhijeet/dev/turboae/interleavers.py:45:0
+  %406 : Float(*, *, *, strides=[1, 50, 1], requires_grad=1, device=cpu) = onnx::Transpose[perm=[1, 0, 2]](%405) # /home/abhijeet/dev/turboae/interleavers.py:46:0
+  %final : Float(*, *, *, strides=[1, 50, 1], requires_grad=1, device=cpu) = onnx::Sigmoid(%406) # /home/abhijeet/dev/turboae/decoders.py:284:0
+  return (%final)
+
+Exiting

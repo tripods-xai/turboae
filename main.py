@@ -3,6 +3,7 @@ __author__ = 'yihanjiang'
 # Tested on PyTorch 1.0.
 # TBD: remove all non-TurboAE related functions.
 
+import os
 import torch
 import torch.optim as optim
 import numpy as np
@@ -163,7 +164,7 @@ if __name__ == '__main__':
         pass
 
     else:
-        pretrained_model = torch.load(args.init_nw_weight)
+        pretrained_model = torch.load(args.init_nw_weight,  map_location=device)
 
         try:
             model.load_state_dict(pretrained_model.state_dict(), strict = False)
@@ -174,6 +175,168 @@ if __name__ == '__main__':
         model.args = args
 
     print(model)
+    
+    if args.examine:
+        from pprint import pprint
+        
+        dec_to_save = model.dec
+        state_dict = dec_to_save.state_dict()
+        pprint(list(state_dict.keys()))
+        input()
+        pprint({k: v.shape for k, v in state_dict.items()})
+        input()
+        pprint(state_dict)
+        
+        print("Exiting")
+        exit()
+    
+    if args.compare_encoders:
+        import sys
+        sys.path.append('/home/abhijeet/dev/turbo-codes/')
+        print(sys.path)
+        from src.codes import turboae_binary_exact_nonsys
+        import tensorflow as tf
+        
+        exact_code_spec = turboae_binary_exact_nonsys()
+        noninterleaved_code = exact_code_spec.noninterleaved_code
+        interleaved_code = exact_code_spec.interleaved_code
+        turboae_enc = model.enc
+        
+        batch_size = 1
+        test_input = np.random.randint(0, 2, size=(batch_size, 100, 1)).astype(np.float32)
+        # print(test_input)
+        torch_test_input = torch.from_numpy(test_input)
+        enc_out = turboae_enc(torch_test_input)
+        
+        noninterleaved_input = tf.convert_to_tensor(test_input)
+        interleaved_input = tf.convert_to_tensor(turboae_enc.interleaver(torch_test_input).numpy())
+        exact_out = 2 * tf.concat([noninterleaved_code(noninterleaved_input), interleaved_code(interleaved_input)], axis=2) - 1.
+        
+        exact_out_numpy = ((exact_out.numpy() + 1) / 2).astype(np.int32)
+        enc_out_numpy = ((enc_out.detach().numpy() + 1) / 2).astype(np.int32)
+        print("EXACT")
+        print(exact_out_numpy)
+        print("TURBOAE")
+        print(enc_out_numpy)
+        
+        print("BOTH")
+        print(np.concatenate([exact_out_numpy[:, 2:], enc_out_numpy[:, :-2]], axis=2))
+        
+        print("Exiting")
+        exit()
+        
+        
+        
+        
+    
+    if args.test_compare:
+        import sys
+        sys.path.append('/home/abhijeet/dev/turbo-codes/')
+        print(sys.path)
+        
+        import tensorflow as tf
+        from src.turboae_adapters import TFTurboAEDecoderCNN, TurboAEDecoderParameters
+        
+        model_filename = os.path.splitext(os.path.basename(args.init_nw_weight))[0]
+        print(f"Model filename is {model_filename}")
+        dec_to_save = model.dec
+        state_dict = dec_to_save.state_dict()
+        state_dict_path = './tmp/decoders/' + '_'.join([identity, model_filename, 'dec']) + '.pt'
+        torch.save(dec_to_save.state_dict(), state_dict_path)
+        torch_state_dict = torch.load(state_dict_path)
+        params = TurboAEDecoderParameters.from_pytorch(torch_state_dict)
+        tf_model = TFTurboAEDecoderCNN(params, block_len=100)
+        
+        batch_size = args.batch_size
+        for i in range(10):
+            test_input = 2 * np.random.randint(0, 1, size=(batch_size, 100, 3)).astype(np.float32) - 1 + \
+                np.random.normal(0, 1, size=(batch_size, 100, 3))
+            torch_test_input = torch.from_numpy(test_input)
+            tf_test_input = tf.convert_to_tensor(test_input)
+            
+            torch_output = model.dec(torch_test_input)
+            tf_output = tf_model(tf_test_input)
+            
+            np.testing.assert_almost_equal(torch_output.cpu().detach().numpy(), tf_output.numpy(), decimal=5)
+            print(f"{i} passed!")
+        
+        
+        print('Exiting')
+        exit()
+        
+    
+    if args.onnx_save_decoder:
+        # torch.save(model.state_dict(), './tmp/torch_model_'+identity+'.pt')
+        model_filename = os.path.splitext(os.path.basename(args.init_nw_weight))[0]
+        print(f"Model filename is {model_filename}")
+        dec_to_save = model.dec
+        torch.save(dec_to_save.state_dict(), './tmp/decoders/' + '_'.join([identity, model_filename, 'dec']) + '.pt')
+        np.save('./tmp/decoders/' + '_'.join([identity, 'interleaver']) + '.np', p_array1)
+        # ONNX conversion
+        dummy_input = torch.zeros((50, args.block_len, 3))
+        input_names=['received']
+        output_names=['final']
+        torch.onnx.export(
+            dec_to_save, 
+            dummy_input, 
+            './tmp/decoders/' + '_'.join([identity, model_filename, 'dec']) + '.onnx', 
+            verbose=True, 
+            input_names=input_names, 
+            output_names=output_names,
+            dynamic_axes={
+                      # dict value: manually named axes
+                      "received": {0: "batch"},
+                      "final": {0: "batch"},
+                  }
+            )
+        print("Exiting")
+        exit()
+    
+    if args.test_onnx_decoder:
+        import onnx
+        from onnx_tf.backend import prepare
+        import tensorflow as tf
+        import tensorflow.compat.v1 as tf1
+        
+        model_filename = os.path.splitext(os.path.basename(args.onnx_decoder_path))[0]
+        onnx_dec = onnx.load(args.onnx_decoder_path)  # load onnx model
+        
+        onnx_tf_dec = prepare(onnx_dec)
+        # graph_fname = './tmp/decoders/' + '_'.join([identity, model_filename])
+        # onnx_tf_dec.export_graph(graph_fname)
+        
+        # INPUT_TENSOR_NAME = 'received.1:0'
+        # OUTPUT_TENSOR_NAME = 'final:0'
+        
+        # with tf1.gfile.FastGFile(graph_fname + '/saved_model.pb', 'rb') as f:
+        #     graph_def = tf1.GraphDef()
+        #     graph_def.ParseFromString(f.read())
+            
+        # with tf1.Graph().as_default() as graph:
+        #     tf1.import_graph_def(graph_def, name="")
+            
+        # input_tensor = graph.get_tensor_by_name(INPUT_TENSOR_NAME)
+        # output_tensor = graph.get_tensor_by_name(OUTPUT_TENSOR_NAME)
+        
+        torch_dec = model.dec
+        
+        for i in range(10):
+            test_input = np.random.randint(0, 1, size=(75, 100, 3)).astype(np.float32)
+            torch_test_input = torch.from_numpy(test_input)
+            tf_test_input = tf.convert_to_tensor(test_input)
+            
+            torch_output = model.dec(torch_test_input)
+            # with tf1.Session(graph=graph) as sess:
+            #     tf_output = sess.run(output_tensor, feed_dict={input_tensor: tf_test_input})  #
+            tf_output = onnx_tf_dec.run(tf_test_input)
+            
+            np.testing.assert_almost_equal(torch_output.cpu().detach().numpy(), tf_output.final, decimal=5)
+            print(f"{i} passed!")
+        
+        print("Exiting")
+        exit()
+        
+        
 
 
     ##################################################################
