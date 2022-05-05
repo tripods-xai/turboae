@@ -220,7 +220,8 @@ if __name__ == '__main__':
         print(enc_out_numpy)
         
         print("BOTH")
-        print(np.concatenate([exact_out_numpy[:, 2:], enc_out_numpy[:, :-2]], axis=2))
+        print(np.concatenate([exact_out_numpy, enc_out_numpy], axis=2))
+        # print(np.concatenate([exact_out_numpy[:, 2:], enc_out_numpy[:, :-2]], axis=2))
         
         print("Exiting")
         exit()
@@ -255,7 +256,7 @@ if __name__ == '__main__':
             tf_test_input = tf.convert_to_tensor(test_input)
             
             torch_output = model.dec(torch_test_input)
-            tf_output = tf_model(tf_test_input)
+            tf_output = tf.sigmoid(tf_model(tf_test_input))
             
             np.testing.assert_almost_equal(torch_output.cpu().detach().numpy(), tf_output.numpy(), decimal=5)
             print(f"{i} passed!")
