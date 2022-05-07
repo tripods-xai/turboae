@@ -65,6 +65,15 @@ def errors_bler(y_true, y_pred, positions = 'default'):
 
     return bler_err_rate
 
+def errors_bler_list(y_true, y_pred, positions = 'default'):
+    y_true = y_true.view(y_true.shape[0], -1, 1)
+    y_pred = y_pred.view(y_pred.shape[0], -1, 1)
+
+    myOtherTensor = torch.ne(torch.round(y_true), torch.round(y_pred)).float()
+    res_list_tensor = (torch.sum(myOtherTensor, dim = 1) > 0).type(torch.FloatTensor)
+
+    return res_list_tensor
+
 # note there are a few definitions of SNR. In our result, we stick to the following SNR setup.
 def snr_db2sigma(train_snr):
     return 10**(-train_snr*1.0/20)

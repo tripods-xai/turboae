@@ -5,13 +5,14 @@ import torch.nn.functional as F
 
 eps  = 1e-6
 
-from utils import snr_sigma2db, snr_db2sigma, code_power, errors_ber_pos, errors_ber, errors_bler
+from utils import errors_ber_list, snr_sigma2db, snr_db2sigma, code_power, errors_ber_pos, errors_ber, errors_bler, errors_bler_list
 from loss import customized_loss
 from channels import generate_noise
 
 import numpy as np
 from numpy import arange
 from numpy.random import mtrand
+from tqdm import trange
 
 ######################################################################################
 #
@@ -144,15 +145,17 @@ def test(model, args, block_len = 'default',use_cuda = False):
 
     # Precomputes Norm Statistics.
     if args.precompute_norm_stats:
+        print('Precomputing norm stats')
         with torch.no_grad():
             num_test_batch = int(args.num_block/(args.batch_size)* args.test_ratio)
-            for batch_idx in range(num_test_batch):
+            for batch_idx in trange(num_test_batch):
                 X_test = torch.randint(0, 2, (args.batch_size, block_len, args.code_rate_k), dtype=torch.float)
                 X_test = X_test.to(device)
                 _      = model.enc(X_test)
             print('Pre-computed norm statistics mean ',model.enc.mean_scalar, 'std ', model.enc.std_scalar)
 
     ber_res, bler_res = [], []
+    ber_std_res, bler_std_res = [], []
     ber_res_punc, bler_res_punc = [], []
     snr_interval = (args.snr_test_end - args.snr_test_start)* 1.0 /  (args.snr_points-1)
     snrs = [snr_interval* item + args.snr_test_start for item in range(args.snr_points)]
@@ -161,9 +164,11 @@ def test(model, args, block_len = 'default',use_cuda = False):
 
     for sigma, this_snr in zip(sigmas, snrs):
         test_ber, test_bler = .0, .0
+        test_ber_lists, test_bler_lists = [], []
+        print(f"testing snr {this_snr}")
         with torch.no_grad():
             num_test_batch = int(args.num_block/(args.batch_size))
-            for batch_idx in range(num_test_batch):
+            for batch_idx in trange(num_test_batch):
                 X_test     = torch.randint(0, 2, (args.batch_size, block_len, args.code_rate_k), dtype=torch.float)
                 noise_shape = (args.batch_size, args.block_len, args.code_rate_n)
                 fwd_noise  = generate_noise(noise_shape, args, test_sigma=sigma)
@@ -175,6 +180,8 @@ def test(model, args, block_len = 'default',use_cuda = False):
 
                 test_ber  += errors_ber(X_hat_test,X_test)
                 test_bler += errors_bler(X_hat_test,X_test)
+                test_ber_lists.append(errors_ber_list(X_hat_test,X_test))
+                test_bler_lists.append(errors_bler_list(X_hat_test,X_test))
 
                 if batch_idx == 0:
                     test_pos_ber = errors_ber_pos(X_hat_test,X_test)
@@ -214,9 +221,18 @@ def test(model, args, block_len = 'default',use_cuda = False):
 
         test_ber  /= num_test_batch
         test_bler /= num_test_batch
-        print('Test SNR',this_snr ,'with ber ', float(test_ber), 'with bler', float(test_bler))
+        test_ber_lists = torch.cat(test_ber_lists, dim=0)
+        test_bler_lists = torch.cat(test_bler_lists, dim=0)
+        ber_std, ber_sanity_mean = torch.std_mean(test_ber_lists, unbiased=True)
+        bler_std, bler_sanity_mean = torch.std_mean(test_bler_lists, unbiased=True)
+        print(f'Test SNR {this_snr} with ber mean {float(test_ber)} and std {float(ber_std)}')
+        print(f'Test SNR {this_snr} with bler mean {float(test_bler)} and std {float(bler_std)}')
+        print(f'BER Sanity mean: {ber_sanity_mean}')
+        print(f'BLER Sanity mean: {bler_sanity_mean}')
         ber_res.append(float(test_ber))
         bler_res.append( float(test_bler))
+        ber_std_res.append(float(ber_std))
+        bler_std_res.append(float(bler_std))
 
         try:
             test_ber_punc  /= num_test_batch
@@ -229,7 +245,9 @@ def test(model, args, block_len = 'default',use_cuda = False):
 
     print('final results on SNRs ', snrs)
     print('BER', ber_res)
+    print(f'BER Std {ber_std_res}')
     print('BLER', bler_res)
+    print(f'BLER Std {bler_std_res}')
     print('final results on punctured SNRs ', snrs)
     print('BER', ber_res_punc)
     print('BLER', bler_res_punc)
