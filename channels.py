@@ -4,6 +4,19 @@ import torch
 from utils import snr_db2sigma, snr_sigma2db
 import numpy as np
 
+import tensorflow as tf
+import tensorflow_probability as tfp
+tfd = tfp.distributions
+
+class AdditiveTonAWGN:
+    def __init__(self, sigma, v=3):
+        self.v = v
+        self.distribution = tfp.distributions.StudentT(df=self.v, loc=0, scale=1)
+        self.sigma = sigma
+    
+    def noise_func(self, shape):
+        return self.sigma * tf.sqrt((self.v - 2) / self.v) * self.distribution.sample(shape)
+
 def generate_noise(noise_shape, args, test_sigma = 'default', snr_low = 0.0, snr_high = 0.0, mode = 'encoder'):
     # SNRs at training
     if test_sigma == 'default':
@@ -35,7 +48,8 @@ def generate_noise(noise_shape, args, test_sigma = 'default', snr_low = 0.0, snr
         fwd_noise  = this_sigma * torch.randn(noise_shape, dtype=torch.float)
 
     elif args.channel == 't-dist':
-        fwd_noise  = this_sigma * torch.from_numpy(np.sqrt((args.vv-2)/args.vv) * np.random.standard_t(args.vv, size = noise_shape)).type(torch.FloatTensor)
+        # fwd_noise  = this_sigma * torch.from_numpy(np.sqrt((args.vv-2)/args.vv) * np.random.standard_t(args.vv, size = noise_shape)).type(torch.FloatTensor)
+        fwd_noise = torch.from_numpy(AdditiveTonAWGN(this_sigma, args.vv).noise_func(noise_shape).numpy()).type(torch.FloatTensor)
 
     elif args.channel == 'radar':
         add_pos     = np.random.choice([0.0, 1.0], noise_shape,
