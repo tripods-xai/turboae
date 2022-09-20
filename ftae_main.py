@@ -40,7 +40,7 @@ if __name__ == '__main__':
     print(args)
 
     use_cuda = not args.no_cuda and torch.cuda.is_available()
-    device = torch.device("cuda" if use_cuda else "cpu")
+    device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
     #################################################
     # Setup Channel AE: Encoder, Decoder, Channel

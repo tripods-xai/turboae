@@ -87,7 +87,7 @@ class DEC_LargeCNN(torch.nn.Module):
         self.args = args
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         self.interleaver          = Interleaver(args, p_array)
         self.deinterleaver        = DeInterleaver(args, p_array)
@@ -183,7 +183,7 @@ class DEC_LargeRNN(torch.nn.Module):
         self.args = args
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         self.interleaver          = Interleaver(args, p_array)
         self.deinterleaver        = DeInterleaver(args, p_array)
@@ -330,7 +330,7 @@ args = get_args()
 print(args)
 
 use_cuda = not args.no_cuda and torch.cuda.is_available()
-device = torch.device("cuda" if use_cuda else "cpu")
+device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
 
 # setup interleaver.

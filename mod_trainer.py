@@ -22,7 +22,7 @@ from numpy.random import mtrand
 
 def train(epoch, model, optimizer, args, use_cuda = False, verbose = True, mode = 'encoder'):
 
-    device = torch.device("cuda" if use_cuda else "cpu")
+    device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
     model.train()
     start_time = time.time()
@@ -87,7 +87,7 @@ def train(epoch, model, optimizer, args, use_cuda = False, verbose = True, mode 
 
 def validate(model, optimizer, args, use_cuda = False, verbose = True):
 
-    device = torch.device("cuda" if use_cuda else "cpu")
+    device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
     model.eval()
     test_bce_loss, test_custom_loss, test_ber= 0.0, 0.0, 0.0
@@ -136,7 +136,7 @@ def validate(model, optimizer, args, use_cuda = False, verbose = True):
 
 def test(model, args, block_len = 'default',use_cuda = False):
 
-    device = torch.device("cuda" if use_cuda else "cpu")
+    device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
     model.eval()
 
     if block_len == 'default':

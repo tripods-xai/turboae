@@ -82,7 +82,7 @@ class Channel_AE(torch.nn.Module):
     def __init__(self, args, enc, dec):
         super(Channel_AE, self).__init__()
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         self.args = args
         self.enc = enc
@@ -149,7 +149,7 @@ class Channel_ModAE(torch.nn.Module):
     def __init__(self, args, enc, dec, mod, demod, modulation = 'qpsk'):
         super(Channel_ModAE, self).__init__()
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         self.args = args
         self.enc = enc

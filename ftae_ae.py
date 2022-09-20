@@ -42,7 +42,7 @@ class CNN_encoder(FB_encoder_base):
         super(CNN_encoder, self).__init__()
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
         self.args = args
 
         self.is_systematic_bit = is_systematic_bit
@@ -85,7 +85,7 @@ class FTAE_decoder(torch.nn.Module):
         super(FTAE_decoder, self).__init__()
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         self.args = args
         # interleaver
@@ -208,7 +208,7 @@ class FTAE_Shareddecoder(torch.nn.Module):
         super(FTAE_Shareddecoder, self).__init__()
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         self.args = args
         # interleaver
@@ -273,7 +273,7 @@ class CNN_decoder(torch.nn.Module):
         super(CNN_decoder, self).__init__()
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         self.args = args
 
@@ -297,7 +297,7 @@ class Channel_Feedback_rate3(torch.nn.Module):
         super(Channel_Feedback_rate3, self).__init__()
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         self.args = args
         # interleaver

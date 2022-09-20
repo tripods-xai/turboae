@@ -1,0 +1,336 @@
+Namespace(batch_size=10000, bce_lambda=1.0, bec_p=0.0, bec_p_dec=0.0, ber_lambda=1.0, block_len=100, block_len_high=200, block_len_low=10, bsc_p=0.0, bsc_p_dec=0.0, channel='awgn', code_rate_k=1, code_rate_n=3, dec_act='linear', dec_kernel_size=5, dec_lr=0.0001, dec_num_layer=5, dec_num_unit=100, dec_rnn='gru', decoder='TurboAE_rate3_cnn', demod_lr=0.005, demod_num_layer=1, demod_num_unit=20, dropout=0.0, enc_act='elu', enc_clipping='both', enc_grad_limit=0.01, enc_kernel_size=5, enc_lr=0.0001, enc_num_layer=2, enc_num_unit=100, enc_quantize_level=2, enc_rnn='gru', enc_truncate_limit=0, enc_value_limit=1.0, encoder='TurboAE_rate3_cnn', extrinsic=1, focal_alpha=1.0, focal_gamma=0.0, img_size=10, init_nw_weight='./models/dta_steq2_cnn2_cnn5_enctrain2_dectrainneg15_2.pt', is_interleave=1, is_k_same_code=False, is_parallel=1, is_same_interleaver=1, is_variable_block_len=False, joint_train=0, k_same_code=2, lambda_maxBCE=0.01, loss='bce', mod_lr=0.005, mod_num_layer=1, mod_num_unit=20, mod_pc='block_power', mod_rate=2, momentum=0.9, no_code_norm=False, no_cuda=False, num_ber_puncture=5, num_block=20000, num_epoch=0, num_iter_ft=5, num_iteration=6, num_train_dec=5, num_train_demod=5, num_train_enc=1, num_train_mod=1, optimizer='adam', precompute_norm_stats=True, print_pos_ber=False, print_pos_power=False, print_test_traj=True, radar_power=5.0, radar_prob=0.05, rec_quantize=False, rec_quantize_level=2, rec_quantize_limit=1.0, snr_points=13, snr_test_end=3.0, snr_test_start=-3.0, test_channel_mode='block_norm_ste', test_ratio=1, train_channel_mode='block_norm_ste', train_dec_channel_high=2.0, train_dec_channel_low=-1.5, train_enc_channel_high=2.0, train_enc_channel_low=2.0, vv=5)
+using random interleaver [26 86  2 55 75 93 16 73 54 95 53 92 78 13  7 30 22 24 33  8 43 62  3 71
+ 45 48  6 99 82 76 60 80 90 68 51 27 18 56 63 74  1 61 42 41  4 15 17 40
+ 38  5 91 59  0 34 28 50 11 35 23 52 10 31 66 57 79 85 32 84 14 89 19 29
+ 49 97 98 69 20 94 72 77 25 37 81 46 39 65 58 12 88 70 87 36 21 83  9 96
+ 67 64 47 44] [18 29 64 92 72 87  5 15 12 17 61 76  9 78 80  7 33  6 37 74 79  1 45 28
+ 60 52 25 39 97 44 16 55 83 49 22 70 47  4 82 94 53 66 26 84 31 63  8 75
+ 98 57 71 99 86 96 69 24 30 13 40 56 68 95 81 19 38 91 54 32 51 85 11 89
+ 90 36 65 88 41 14 27 50 20 46 67 35 62  2 59 23 58 43 10  0 73 21 77 42
+  3 93 48 34]
+Channel_AE(
+  (enc): ENC_interCNN(
+    (enc_cnn_1): DataParallel(
+      (module): SameShapeConv1d(
+        (cnns): ModuleList(
+          (0): Conv1d(1, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+        )
+      )
+    )
+    (enc_cnn_2): DataParallel(
+      (module): SameShapeConv1d(
+        (cnns): ModuleList(
+          (0): Conv1d(1, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+        )
+      )
+    )
+    (enc_cnn_3): DataParallel(
+      (module): SameShapeConv1d(
+        (cnns): ModuleList(
+          (0): Conv1d(1, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+        )
+      )
+    )
+    (enc_linear_1): DataParallel(
+      (module): Linear(in_features=100, out_features=1, bias=True)
+    )
+    (enc_linear_2): DataParallel(
+      (module): Linear(in_features=100, out_features=1, bias=True)
+    )
+    (enc_linear_3): DataParallel(
+      (module): Linear(in_features=100, out_features=1, bias=True)
+    )
+    (interleaver): Interleaver()
+  )
+  (dec): DEC_LargeCNN(
+    (interleaver): Interleaver()
+    (deinterleaver): DeInterleaver()
+    (dec1_cnns): ModuleList(
+      (0): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (1): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (2): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (3): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (4): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (5): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+    )
+    (dec2_cnns): ModuleList(
+      (0): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (1): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (2): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (3): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (4): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+      (5): DataParallel(
+        (module): SameShapeConv1d(
+          (cnns): ModuleList(
+            (0): Conv1d(7, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (1): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (2): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (3): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+            (4): Conv1d(100, 100, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+        )
+      )
+    )
+    (dec1_outputs): ModuleList(
+      (0): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (1): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (2): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (3): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (4): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (5): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+    )
+    (dec2_outputs): ModuleList(
+      (0): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (1): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (2): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (3): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (4): DataParallel(
+        (module): Linear(in_features=100, out_features=5, bias=True)
+      )
+      (5): DataParallel(
+        (module): Linear(in_features=100, out_features=1, bias=True)
+      )
+    )
+  )
+)
+test loss trajectory []
+test ber trajectory []
+total epoch 0
+saved model ./tmp/torch_model_888765.pt
+Precomputing norm stats
+Pre-computed norm statistics mean  tensor([-0.0214], device='cuda:0') std  tensor([0.5113], device='cuda:0')
+SNRS [-3.0, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
+testing snr -3.0
+no pos BER specified.
+Test SNR -3.0 with ber mean 0.28058499097824097 and std 0.12488717585802078
+Test SNR -3.0 with bler mean 0.9876 and std 0.11066550016403198
+BER Sanity mean: 0.28058499097824097
+BLER Sanity mean: 0.9876000285148621
+Punctured Test SNR -3.0 with ber  0.0 with bler 0.0
+testing snr -2.5
+no pos BER specified.
+Test SNR -2.5 with ber mean 0.22289900481700897 and std 0.13819941878318787
+Test SNR -2.5 with bler mean 0.9468 and std 0.22443769872188568
+BER Sanity mean: 0.22289900481700897
+BLER Sanity mean: 0.9467999935150146
+Punctured Test SNR -2.5 with ber  0.0 with bler 0.0
+testing snr -2.0
+no pos BER specified.
+Test SNR -2.0 with ber mean 0.15578800439834595 and std 0.13791196048259735
+Test SNR -2.0 with bler mean 0.85305 and std 0.3540649116039276
+BER Sanity mean: 0.15578800439834595
+BLER Sanity mean: 0.8530499935150146
+Punctured Test SNR -2.0 with ber  0.0 with bler 0.0
+testing snr -1.5
+no pos BER specified.
+Test SNR -1.5 with ber mean 0.09118200093507767 and std 0.1199994683265686
+Test SNR -1.5 with bler mean 0.6771 and std 0.46759653091430664
+BER Sanity mean: 0.09118200093507767
+BLER Sanity mean: 0.6771000027656555
+Punctured Test SNR -1.5 with ber  0.0 with bler 0.0
+testing snr -1.0
+no pos BER specified.
+Test SNR -1.0 with ber mean 0.04060950130224228 and std 0.08409486711025238
+Test SNR -1.0 with bler mean 0.43695 and std 0.49602118134498596
+BER Sanity mean: 0.04060950130224228
+BLER Sanity mean: 0.4369499981403351
+Punctured Test SNR -1.0 with ber  0.0 with bler 0.0
+testing snr -0.5
+no pos BER specified.
+Test SNR -0.5 with ber mean 0.014563499949872494 and std 0.04900713637471199
+Test SNR -0.5 with bler mean 0.23225 and std 0.42227816581726074
+BER Sanity mean: 0.014563499949872494
+BLER Sanity mean: 0.23225000500679016
+Punctured Test SNR -0.5 with ber  0.0 with bler 0.0
+testing snr 0.0
+no pos BER specified.
+Test SNR 0.0 with ber mean 0.003737000050023198 and std 0.021937614306807518
+Test SNR 0.0 with bler mean 0.10020000000000001 and std 0.30027398467063904
+BER Sanity mean: 0.003737000050023198
+BLER Sanity mean: 0.10019999742507935
+Punctured Test SNR 0.0 with ber  0.0 with bler 0.0
+testing snr 0.5
+no pos BER specified.
+Test SNR 0.5 with ber mean 0.0010125000262632966 and std 0.009899229742586613
+Test SNR 0.5 with bler mean 0.041749999999999995 and std 0.20002233982086182
+BER Sanity mean: 0.0010125000262632966
+BLER Sanity mean: 0.041749998927116394
+Punctured Test SNR 0.5 with ber  0.0 with bler 0.0
+testing snr 1.0
+no pos BER specified.
+Test SNR 1.0 with ber mean 0.00024249999842140824 and std 0.002415881957858801
+Test SNR 1.0 with bler mean 0.016 and std 0.12547823786735535
+BER Sanity mean: 0.00024249999842140824
+BLER Sanity mean: 0.01600000075995922
+Punctured Test SNR 1.0 with ber  0.0 with bler 0.0
+testing snr 1.5
+no pos BER specified.
+Test SNR 1.5 with ber mean 7.79999973019585e-05 and std 0.0011593028903007507
+Test SNR 1.5 with bler mean 0.0057 and std 0.07528474926948547
+BER Sanity mean: 7.79999973019585e-05
+BLER Sanity mean: 0.00570000009611249
+Punctured Test SNR 1.5 with ber  0.0 with bler 0.0
+testing snr 2.0
+no pos BER specified.
+Test SNR 2.0 with ber mean 3.7500001781154424e-05 and std 0.0008328435360454023
+Test SNR 2.0 with bler mean 0.0027 and std 0.05189262703061104
+BER Sanity mean: 3.749999814317562e-05
+BLER Sanity mean: 0.0027000000700354576
+Punctured Test SNR 2.0 with ber  0.0 with bler 0.0
+testing snr 2.5
+no pos BER specified.
+Test SNR 2.5 with ber mean 1.2999999853491317e-05 and std 0.00039979867869988084
+Test SNR 2.5 with bler mean 0.00115 and std 0.03389299288392067
+BER Sanity mean: 1.2999999853491317e-05
+BLER Sanity mean: 0.0011500000255182385
+Punctured Test SNR 2.5 with ber  0.0 with bler 0.0
+testing snr 3.0
+no pos BER specified.
+Test SNR 3.0 with ber mean 4.500000159168849e-06 and std 0.0002549176278989762
+Test SNR 3.0 with bler mean 0.00035 and std 0.01870547980070114
+BER Sanity mean: 4.499999704421498e-06
+BLER Sanity mean: 0.0003499999875202775
+Punctured Test SNR 3.0 with ber  0.0 with bler 0.0
+final results on SNRs  [-3.0, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
+BER [0.28058499097824097, 0.22289900481700897, 0.15578800439834595, 0.09118200093507767, 0.04060950130224228, 0.014563499949872494, 0.003737000050023198, 0.0010125000262632966, 0.00024249999842140824, 7.79999973019585e-05, 3.7500001781154424e-05, 1.2999999853491317e-05, 4.500000159168849e-06]
+BER Std [0.12488717585802078, 0.13819941878318787, 0.13791196048259735, 0.1199994683265686, 0.08409486711025238, 0.04900713637471199, 0.021937614306807518, 0.009899229742586613, 0.002415881957858801, 0.0011593028903007507, 0.0008328435360454023, 0.00039979867869988084, 0.0002549176278989762]
+BLER [0.9876, 0.9468, 0.85305, 0.6771, 0.43695, 0.23225, 0.10020000000000001, 0.041749999999999995, 0.016, 0.0057, 0.0027, 0.00115, 0.00035]
+BLER Std [0.11066550016403198, 0.22443769872188568, 0.3540649116039276, 0.46759653091430664, 0.49602118134498596, 0.42227816581726074, 0.30027398467063904, 0.20002233982086182, 0.12547823786735535, 0.07528474926948547, 0.05189262703061104, 0.03389299288392067, 0.01870547980070114]
+final results on punctured SNRs  [-3.0, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
+BER [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+BLER [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+encoder power is tensor(0.9998, device='cuda:0')
+adjusted SNR should be [-3.0017424335585567, -2.501742569063249, -2.001742836790671, -1.5017419961950815, -1.0017421558531399, -0.5017424714602986, -0.0017424685981945007, 0.4982575026210545, 0.9982577927096701, 1.4982576352323695, 1.9982575820381256, 2.498257718479564, 2.9982577408125817]

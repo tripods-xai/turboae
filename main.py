@@ -110,8 +110,9 @@ if __name__ == '__main__':
     args = get_args()
     print(args)
 
-    use_cuda = not args.no_cuda and torch.cuda.is_available()
-    device = torch.device("cuda" if use_cuda else "cpu")
+    # use_cuda = not args.no_cuda and torch.cuda.is_available()
+    use_cuda = False
+    device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
     #################################################
     # Setup Channel AE: Encoder, Decoder, Channel
@@ -191,39 +192,80 @@ if __name__ == '__main__':
         exit()
     
     if args.compare_encoders:
-        import sys
-        sys.path.append('/home/abhijeet/dev/turbo-codes/')
-        print(sys.path)
-        from src.codes import turboae_binary_exact_nonsys
+        print("Doing test of comparing encoder")
+        if not args.use_precomputed_norm_stats:
+            raise ValueError("Need to be using --use_precomputed_norm_stats")
+        
+        import numpy as np
         import tensorflow as tf
+        from src.factories import turboae_exact_nonsys_bd, turboae_exact_nonsys_bd2
+        from src.interleaver import TurboAEInterleaver
         
-        exact_code_spec = turboae_binary_exact_nonsys()
-        noninterleaved_code = exact_code_spec.noninterleaved_code
-        interleaved_code = exact_code_spec.interleaved_code
-        turboae_enc = model.enc
+        model_filename = os.path.splitext(os.path.basename(args.init_nw_weight))[0]
+        print(f"Model filename is {model_filename}")
+        # encoder = turboae_exact_nonsys_bd(TurboAEInterleaver(), block_len=100, delay=4)
+        encoder = turboae_exact_nonsys_bd2(TurboAEInterleaver(), block_len=100, delay=2)
         
-        batch_size = 1
-        test_input = np.random.randint(0, 2, size=(batch_size, 100, 1)).astype(np.float32)
-        # print(test_input)
+        batch_size = args.batch_size
+        for i in range(100):
+            test_input = np.random.randint(0, 2, size=(batch_size, 100, 1))
+            torch_test_input = torch.from_numpy(test_input)
+            tf_test_input = tf.convert_to_tensor(test_input, dtype=tf.float32)
+            
+            model.enc.num_test_block = 10000000
+            model.enc.mean_scalar = torch.tensor([-0.0215])
+            model.enc.std_scalar = torch.tensor([0.5114])
+            torch_output = (model.enc(torch_test_input) + 1) / 2
+            tf_output = encoder(tf_test_input)["output"].value
+            
+            np_out = torch_output.cpu().detach().numpy()
+            my_out = tf_output.numpy()
+            # breakpoint()
+            
+            matches = (np_out == my_out)
+            if np.all(matches):
+                print(f"{i} passed!")
+            else:
+                print(f"{(1 - np.mean(matches.astype(np.float32))) * 100}% mismatches")
+        
+        
+        print('Exiting')
+        exit()
+    
+    if args.compute_bd_functions:
+        print("Computing Bd Functions")
+        if not args.use_precomputed_norm_stats:
+            raise ValueError("Need to be using --use_precomputed_norm_stats")
+        
+        import numpy as np
+        import tensorflow as tf
+        from src.utils import enumerate_binary_inputs
+        
+        class Identity(torch.nn.Module):
+            def __init__(self) -> None:
+                super().__init__()
+            
+            def forward(self, x):
+                return x
+        
+        model_filename = os.path.splitext(os.path.basename(args.init_nw_weight))[0]
+        print(f"Model filename is {model_filename}")
+        
+        test_input = enumerate_binary_inputs(9)[..., None].numpy()
         torch_test_input = torch.from_numpy(test_input)
-        enc_out = turboae_enc(torch_test_input)
+        model.enc.interleaver = Identity()
+        model.enc.num_test_block = 10000000
+        model.enc.mean_scalar = torch.tensor([-0.0215]).cpu()
+        model.enc.std_scalar = torch.tensor([0.5114]).cpu()
+        torch_output = (model.enc(torch_test_input) + 1) / 2
         
-        noninterleaved_input = tf.convert_to_tensor(test_input)
-        interleaved_input = tf.convert_to_tensor(turboae_enc.interleaver(torch_test_input).numpy())
-        exact_out = 2 * tf.concat([noninterleaved_code(noninterleaved_input), interleaved_code(interleaved_input)], axis=2) - 1.
+        np_output = torch_output.cpu().detach().numpy().astype(np.uint8)
+        fp = "./tmp/test_tae.npy"
+        print(f"Saving to {fp}")
+        np.save(fp, np_output)
         
-        exact_out_numpy = ((exact_out.numpy() + 1) / 2).astype(np.int32)
-        enc_out_numpy = ((enc_out.detach().numpy() + 1) / 2).astype(np.int32)
-        print("EXACT")
-        print(exact_out_numpy)
-        print("TURBOAE")
-        print(enc_out_numpy)
         
-        print("BOTH")
-        print(np.concatenate([exact_out_numpy, enc_out_numpy], axis=2))
-        # print(np.concatenate([exact_out_numpy[:, 2:], enc_out_numpy[:, :-2]], axis=2))
-        
-        print("Exiting")
+        print('Exiting')
         exit()
         
         
@@ -231,12 +273,14 @@ if __name__ == '__main__':
         
     
     if args.test_compare:
-        import sys
-        sys.path.append('/home/abhijeet/dev/turbo-codes/')
-        print(sys.path)
+        # import sys
+        # sys.path.append('/home/abhijeet/dev/turbo-codes/')
+        # print(sys.path)
+        
+        print("Doing test of comparing decoders")
         
         import tensorflow as tf
-        from src.turboae_adapters import TFTurboAEDecoderCNN, TurboAEDecoderParameters
+        from old_src.turboae_adapters import TFTurboAEDecoderCNN, TurboAEDecoderParameters
         
         model_filename = os.path.splitext(os.path.basename(args.init_nw_weight))[0]
         print(f"Model filename is {model_filename}")
@@ -264,7 +308,45 @@ if __name__ == '__main__':
         
         print('Exiting')
         exit()
+
+    if args.test_compare_encoder_conversion:
         
+        print("Doing test of comparing converted encoder")
+        # if not args.precompute_norm_stats:
+        #     raise ValueError("Need to be using --precompute_norm_stats")
+        
+        import numpy as np
+        import tensorflow as tf
+        from old_src.turboae_adapters import TFTurboAEEncoderCNN, TurboAEEncoderParameters
+        
+        model_filename = os.path.splitext(os.path.basename(args.init_nw_weight))[0]
+        print(f"Model filename is {model_filename}")
+        enc_to_save = model.enc
+        state_dict = enc_to_save.state_dict()
+        state_dict_path = './tmp/encoders/' + '_'.join([identity, model_filename, 'enc']) + '.pt'
+        torch.save(enc_to_save.state_dict(), state_dict_path)
+        torch_state_dict = torch.load(state_dict_path)
+        params = TurboAEEncoderParameters.from_pytorch(torch_state_dict)
+        tf_model = TFTurboAEEncoderCNN(params, block_len=100)
+        
+        batch_size = args.batch_size
+        for i in range(100):
+            test_input = np.random.randint(0, 1, size=(batch_size, 100, 1))
+            torch_test_input = torch.from_numpy(test_input)
+            tf_test_input = tf.convert_to_tensor(test_input, dtype=tf.float32)
+            
+            # model.enc.num_test_block = 10000000
+            # model.enc.mean_scalar = torch.tensor([-0.0215])
+            # model.enc.std_scalar = torch.tensor([0.5114])
+            torch_output = model.enc(torch_test_input)
+            tf_output = tf_model(tf_test_input)
+            
+            np.testing.assert_almost_equal(torch_output.cpu().detach().numpy(), tf_output.numpy(), decimal=5)
+            print(f"{i} passed!")
+        
+        
+        print('Exiting')
+        exit()
     
     if args.onnx_save_decoder:
         # torch.save(model.state_dict(), './tmp/torch_model_'+identity+'.pt')
@@ -336,7 +418,24 @@ if __name__ == '__main__':
         
         print("Exiting")
         exit()
+    
+    if args.save_encoder:
+        import os
+        from pprint import pprint
+        print("Saving encoder state dict from torch")
         
+        model_filename = os.path.splitext(os.path.basename(args.init_nw_weight))[0]
+        print(f"Model filename is {model_filename}")
+        enc_to_save = model.enc
+        state_dict = enc_to_save.state_dict()
+        state_dict_path = './tmp/encoders/' + '_'.join([identity, model_filename, 'enc']) + '.pt'
+        torch.save(enc_to_save.state_dict(), state_dict_path)
+        
+        print("Done saving")
+        torch_state_dict = torch.load(state_dict_path)
+        pprint(list(torch_state_dict.keys()))
+        
+        exit()
         
 
 

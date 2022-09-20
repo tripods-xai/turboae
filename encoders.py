@@ -65,7 +65,7 @@ class ENCBase(torch.nn.Module):
         super(ENCBase, self).__init__()
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         self.args = args
         self.reset_precomp()
@@ -107,7 +107,13 @@ class ENCBase(torch.nn.Module):
             this_mean    = torch.mean(x_input)
             this_std     = torch.std(x_input)
 
-            if self.args.precompute_norm_stats:
+            if self.args.use_precomputed_norm_stats:
+                if x_input.is_cuda:
+                    x_input = x_input.cpu()
+                # print(self.mean_scalar.is_cuda)
+                # print(self.std_scalar.is_cuda)
+                x_input_norm = (x_input - self.mean_scalar)/self.std_scalar
+            elif self.args.precompute_norm_stats:
                 self.num_test_block += 1.0
                 self.mean_scalar = (self.mean_scalar*(self.num_test_block-1) + this_mean)/self.num_test_block
                 self.std_scalar  = (self.std_scalar*(self.num_test_block-1) + this_std)/self.num_test_block
@@ -305,6 +311,7 @@ from cnn_utils import DenseSameShapeConv1d
 
 class ENC_interCNN(ENCBase):
     def __init__(self, args, p_array):
+        print("This is the encoder getting run...")
         # turbofy only for code rate 1/3
         super(ENC_interCNN, self).__init__(args)
         self.args             = args
@@ -335,6 +342,11 @@ class ENC_interCNN(ENCBase):
         self.enc_linear_3    = torch.nn.Linear(args.enc_num_unit, 1)
 
         self.interleaver      = Interleaver(args, p_array)
+        
+        self.register_buffer('enc_num_layer', torch.tensor(args.enc_num_layer))
+        self.register_buffer('code_rate_k', torch.tensor(self.args.code_rate_k))
+        self.register_buffer('enc_num_unit', torch.tensor(self.args.enc_num_unit))
+        self.register_buffer('enc_kernel_size', torch.tensor(self.args.enc_kernel_size))
 
 
     def set_interleaver(self, p_array):

@@ -19,7 +19,7 @@ class DEC_LargeRNN(torch.nn.Module):
         self.args = args
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         self.interleaver          = Interleaver(args, p_array)
         self.deinterleaver        = DeInterleaver(args, p_array)
@@ -164,7 +164,7 @@ class DEC_LargeCNN(torch.nn.Module):
         self.args = args
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         self.interleaver          = Interleaver(args, p_array)
         self.deinterleaver        = DeInterleaver(args, p_array)
@@ -306,7 +306,7 @@ class DEC_LargeCNN2Int(torch.nn.Module):
         self.args = args
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         self.interleaver1          = Interleaver(args, p_array1)
         self.deinterleaver1        = DeInterleaver(args, p_array1)
@@ -417,7 +417,7 @@ class DEC_LargeCNN2D(torch.nn.Module):
         self.args = args
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         if self.args.encoder == 'TurboAE_rate3_cnn2d_dense':
             CNN2d = DenseSameShapeConv2d
@@ -525,7 +525,7 @@ class DEC_CNN2D(torch.nn.Module):
         self.args = args
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         if self.args.encoder == 'TurboAE_rate3_cnn2d_dense':
             CNN2d = DenseSameShapeConv2d
@@ -568,7 +568,7 @@ class DEC_LargeRNN_rate2(torch.nn.Module):
         self.args = args
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         self.interleaver          = Interleaver(args, p_array)
         self.deinterleaver        = DeInterleaver(args, p_array)
@@ -661,7 +661,7 @@ class DEC_LargeCNN_rate2(torch.nn.Module):
         self.args = args
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         self.interleaver          = Interleaver(args, p_array)
         self.deinterleaver        = DeInterleaver(args, p_array)
@@ -760,7 +760,7 @@ class CNN_decoder_rate3(torch.nn.Module):
         self.args = args
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
         self.dec_cnn = SameShapeConv1d(num_layer=args.dec_num_layer, in_channels=3,
                                                   out_channels= args.dec_num_unit, kernel_size = args.dec_kernel_size)
@@ -803,7 +803,7 @@ class NeuralTurbofyDec(torch.nn.Module):
         self.dec_final = torch.nn.Linear(args.num_iter_ft, 1)
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.device = torch.device("cuda" if use_cuda else "cpu")
+        self.device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
 
     def enc_act(self, inputs):
         if self.enc_act == 'tanh':

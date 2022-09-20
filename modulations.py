@@ -48,7 +48,7 @@ class Modulation(torch.nn.Module):
         super(Modulation, self).__init__()
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
         self.args = args
 
         self.mod_layer = SameShapeConv1d(num_layer=args.mod_num_layer, in_channels=args.mod_rate,
@@ -93,7 +93,7 @@ class DeModulation(torch.nn.Module):
         super(DeModulation, self).__init__()
 
         use_cuda = not args.no_cuda and torch.cuda.is_available()
-        self.this_device = torch.device("cuda" if use_cuda else "cpu")
+        self.this_device = torch.device("cpu")  # torch.device("cuda" if use_cuda else "cpu")
         self.args = args
 
         self.demod_layer = SameShapeConv1d(num_layer=args.demod_num_layer, in_channels=2,
