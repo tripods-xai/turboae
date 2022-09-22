@@ -198,15 +198,16 @@ if __name__ == '__main__':
         
         import numpy as np
         import tensorflow as tf
-        from src.factories import turboae_exact_nonsys_bd, turboae_exact_nonsys_bd2
+        from src.factories import turboae_exact_nonsys_bd_window5_delay2
         from src.interleaver import TurboAEInterleaver
         
         model_filename = os.path.splitext(os.path.basename(args.init_nw_weight))[0]
         print(f"Model filename is {model_filename}")
         # encoder = turboae_exact_nonsys_bd(TurboAEInterleaver(), block_len=100, delay=4)
-        encoder = turboae_exact_nonsys_bd2(TurboAEInterleaver(), block_len=100, delay=2)
+        encoder = turboae_exact_nonsys_bd_window5_delay2(TurboAEInterleaver(), block_len=100)
         
         batch_size = args.batch_size
+        print(batch_size)
         for i in range(100):
             test_input = np.random.randint(0, 2, size=(batch_size, 100, 1))
             torch_test_input = torch.from_numpy(test_input)
