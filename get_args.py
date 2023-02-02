@@ -235,6 +235,9 @@ def get_args():
     parser.add_argument('--test_compare_encoder_conversion', action='store_true')
     parser.add_argument("--compute_bd_functions", action="store_true")
     parser.add_argument("--use_precomputed_norm_stats", action="store_true")
+    parser.add_argument('--save_decoder', action='store_true')
+    parser.add_argument('--test_compare_decoder', action='store_true')
+    
 
     args = parser.parse_args()
 

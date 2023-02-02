@@ -270,8 +270,44 @@ if __name__ == '__main__':
         exit()
         
         
+    if args.save_decoder:
+        model_filename = os.path.splitext(os.path.basename(args.init_nw_weight))[0]
+        print(f"Model filename is {model_filename}")
+        dec_to_save = model.dec
+        state_dict = dec_to_save.state_dict()
+        state_dict_path = './tmp/decoders/' + '_'.join([identity, model_filename, 'dec']) + '.pt'
+        torch.save(dec_to_save.state_dict(), state_dict_path)
+        
+        print("Exiting")
+        exit()
+    
+    if args.test_compare_decoder:
+        from pathlib import Path
+        from src.constants import TURBOAE_DECODER_PATH
+        from src.decoders import TurboAEDecoder
+        
+        decoder_path = Path("../interpreting-deep-codes/src") / TURBOAE_DECODER_PATH
+        print(f"Loading decoder from {decoder_path}")
+        state_dict = torch.load(decoder_path)
+        decoder = TurboAEDecoder(state_dict)
+        
+        model_filename = os.path.splitext(os.path.basename(args.init_nw_weight))[0]
+        print(f"Model filename is {model_filename}")
+        dec_to_save = model.dec
+        
+        batch_size = args.batch_size
+        for i in range(10):
+            test_input = torch.randn(size=(batch_size, decoder.source_data_len, 3)).float()
+            
+            original_output = model.dec(test_input)
+            new_output = torch.sigmoid(decoder(test_input))
+            
+            torch.testing.assert_allclose(new_output, original_output)
+            print(f"{i} passed!")
         
         
+        print("Exiting")
+        exit()
     
     if args.test_compare:
         # import sys

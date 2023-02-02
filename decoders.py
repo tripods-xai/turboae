@@ -195,9 +195,11 @@ class DEC_LargeCNN(torch.nn.Module):
             else:
                 self.dec2_outputs.append(torch.nn.Linear(args.dec_num_unit, args.num_iter_ft))
         
-        self.register_buffer('dec_num_layer', torch.tensor(args.dec_num_layer))
-        self.register_buffer('num_iteration', torch.tensor(self.args.num_iteration))
-        self.register_buffer('num_iter_ft', torch.tensor(self.args.num_iter_ft))
+        self.register_buffer('_num_iteration', torch.tensor(self.args.num_iteration))
+        self.register_buffer('_num_iter_ft', torch.tensor(self.args.num_iter_ft))
+        self.register_buffer('_dec_num_layer', torch.tensor(self.args.dec_num_layer))
+        self.register_buffer('_dec_num_unit', torch.tensor(self.args.dec_num_unit))
+        self.register_buffer('_dec_kernel_size', torch.tensor(self.args.dec_kernel_size))
 
     def set_parallel(self):
         for idx in range(self.args.num_iteration):
