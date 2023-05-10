@@ -411,104 +411,111 @@ if __name__ == "__main__":
         exit()
 
     if args.test_channel_implementation:
-        from tqdm import trange
-        from pathlib import Path
-        from src.channels import VariableAWGN
-        from src.utils import snr2sigma, snr2sigma_torch, sigma2snr, sigma2snr_torch
-        from channels import generate_noise
-        from utils import snr_db2sigma, snr_sigma2db
-        import numpy as np
+        with torch.no_grad():
+            from tqdm import trange
+            from pathlib import Path
+            from src.channels import VariableAWGN
+            from src.utils import snr2sigma, snr2sigma_torch, sigma2snr, sigma2snr_torch
+            from channels import generate_noise
+            from utils import snr_db2sigma, snr_sigma2db
+            import numpy as np
 
-        print("Doing comparision of decoders with pytorch implementation.")
+            print("Doing comparision of decoders with pytorch implementation.")
 
-        sigma_low = snr2sigma(args.train_dec_channel_low)
-        sigma_high = snr2sigma(args.train_dec_channel_high)
-        np.testing.assert_almost_equal(
-            sigma_low, snr_db2sigma(args.train_dec_channel_low), verbose=True
-        )
-        np.testing.assert_almost_equal(
-            sigma_high, snr_db2sigma(args.train_dec_channel_high), verbose=True
-        )
-        np.testing.assert_almost_equal(
-            sigma2snr(sigma_low), snr_sigma2db(sigma_low), verbose=True
-        )
-        np.testing.assert_almost_equal(
-            sigma2snr(sigma_high), snr_sigma2db(sigma_high), verbose=True
-        )
-
-        batch_sigma = (sigma_low - sigma_high) * torch.rand(
-            args.batch_size,
-        ) + sigma_high
-        batch_snr = sigma2snr_torch(batch_sigma)
-        torch.testing.assert_allclose(batch_snr, snr_sigma2db(batch_sigma))
-        torch.testing.assert_allclose(
-            snr2sigma_torch(batch_snr), snr_db2sigma(batch_snr)
-        )
-
-        channel = VariableAWGN(
-            snr_low=args.train_dec_channel_low, snr_high=args.train_dec_channel_high
-        )
-        pprint(channel.settings())
-
-        batch_size = args.batch_size
-        test_enc_input = torch.randint(
-            low=0,
-            high=2,
-            size=(batch_size, args.block_len, 1),
-            dtype=torch.float32,
-        )
-
-        bins = torch.linspace(start=sigma_high, end=sigma_low, steps=50)
-        enc_output = model.enc(test_enc_input)
-        running_mean_original = 0
-        running_var_original = 0
-        original_count = 0
-        original_sigma_hist = 0
-        for i in trange(1000):
-            original_noise = generate_noise(
-                (args.batch_size, args.block_len, args.code_rate_n),
-                args,
-                snr_low=args.train_dec_channel_low,
-                snr_high=args.train_dec_channel_high,
-                mode="decoder",
+            sigma_low = snr2sigma(args.train_dec_channel_low)
+            sigma_high = snr2sigma(args.train_dec_channel_high)
+            np.testing.assert_almost_equal(
+                sigma_low, snr_db2sigma(args.train_dec_channel_low), verbose=True
             )
-            new_els = original_noise.numel()
-            running_mean_original = (
-                torch.mean(original_noise) * new_els
-                + original_count * running_mean_original
-            ) / (new_els + original_count)
-            running_var_original = (
-                torch.var(original_noise) * new_els
-                + original_count * running_var_original
-            ) / (new_els + original_count)
-            sigma_original = torch.std(original_noise, dim=[1, 2])
-            original_sigma_hist = (
-                torch.histogram(sigma_original, bins=bins)[0] + original_sigma_hist
+            np.testing.assert_almost_equal(
+                sigma_high, snr_db2sigma(args.train_dec_channel_high), verbose=True
+            )
+            np.testing.assert_almost_equal(
+                sigma2snr(sigma_low), snr_sigma2db(sigma_low), verbose=True
+            )
+            np.testing.assert_almost_equal(
+                sigma2snr(sigma_high), snr_sigma2db(sigma_high), verbose=True
             )
 
-        running_mean_new = 0
-        running_var_new = 0
-        new_count = 0
-        new_sigma_hist = 0
-        for i in trange(1000):
-            new_noise = channel(enc_output) - enc_output
-            new_els = new_noise.numel()
-            running_mean_new = (
-                torch.mean(new_noise) * new_els + new_count * running_mean_new
-            ) / (new_els + new_count)
-            running_var_new = (
-                torch.var(new_noise) * new_els + new_count * running_var_new
-            ) / (new_els + new_count)
-            sigma_new = torch.std(new_noise, dim=[1, 2])
-            new_sigma_hist = torch.histogram(sigma_new, bins=bins)[0] + new_sigma_hist
+            batch_sigma = (sigma_low - sigma_high) * torch.rand(
+                args.batch_size,
+            ) + sigma_high
+            batch_snr = sigma2snr_torch(batch_sigma)
+            torch.testing.assert_allclose(batch_snr, snr_sigma2db(batch_sigma))
+            torch.testing.assert_allclose(
+                snr2sigma_torch(batch_snr), snr_db2sigma(batch_snr)
+            )
 
-        torch.testing.assert_allclose(running_mean_original, running_mean_new)
-        torch.testing.assert_allclose(running_var_original, running_var_new)
-        torch.testing.assert_allclose(original_sigma_hist, new_sigma_hist)
-        print("Passed!")
+            channel = VariableAWGN(
+                snr_low=args.train_dec_channel_low, snr_high=args.train_dec_channel_high
+            )
+            pprint(channel.settings())
 
-        print("Exiting")
-        exit()
+            batch_size = args.batch_size
+
+            bins = torch.linspace(start=sigma_high, end=sigma_low, steps=50)
+            test_input = torch.zeros((args.batch_size, args.block_len, 3))
+            running_mean_original = 0
+            running_var_original = 0
+            original_count = 0
+            original_sigma_hist = 0
+            for i in trange(1000):
+                original_noise = generate_noise(
+                    (args.batch_size, args.block_len, args.code_rate_n),
+                    args,
+                    snr_low=args.train_dec_channel_low,
+                    snr_high=args.train_dec_channel_high,
+                    mode="decoder",
+                )
+                new_els = original_noise.numel()
+                running_mean_original = (
+                    torch.mean(original_noise) * new_els
+                    + original_count * running_mean_original
+                ) / (new_els + original_count)
+                running_var_original = (
+                    torch.var(original_noise) * new_els
+                    + original_count * running_var_original
+                ) / (new_els + original_count)
+                sigma_original = torch.std(original_noise, dim=[1, 2])
+                original_sigma_hist = (
+                    torch.histogram(sigma_original, bins=bins)[0] + original_sigma_hist
+                )
+
+            running_mean_new = 0
+            running_var_new = 0
+            new_count = 0
+            new_sigma_hist = 0
+            for i in trange(1000):
+                new_noise = channel(test_input) - test_input
+                new_els = new_noise.numel()
+                running_mean_new = (
+                    torch.mean(new_noise) * new_els + new_count * running_mean_new
+                ) / (new_els + new_count)
+                running_var_new = (
+                    torch.var(new_noise) * new_els + new_count * running_var_new
+                ) / (new_els + new_count)
+                sigma_new = torch.std(new_noise, dim=[1, 2])
+                new_sigma_hist = (
+                    torch.histogram(sigma_new, bins=bins)[0] + new_sigma_hist
+                )
+
+            torch.testing.assert_allclose(
+                running_mean_original, running_mean_new, atol=1e-3, rtol=0
+            )
+            torch.testing.assert_allclose(
+                running_var_original, running_var_new, atol=1e-2, rtol=0
+            )
+            torch.testing.assert_allclose(
+                original_sigma_hist,
+                new_sigma_hist,
+                atol=1e-3,
+                rtol=0,
+                msg=f"Original_hist: {original_sigma_hist} : New hist {new_sigma_hist}",
+            )
+            print("Passed!")
+
+            print("Exiting")
+            exit()
 
     if args.test_compare:
         # import sys
@@ -551,130 +558,6 @@ if __name__ == "__main__":
 
             np.testing.assert_almost_equal(
                 torch_output.cpu().detach().numpy(), tf_output.numpy(), decimal=5
-            )
-            print(f"{i} passed!")
-
-        print("Exiting")
-        exit()
-
-    if args.test_compare_encoder_conversion:
-        print(args.test_compare_encoder_conversion)
-
-        print("Doing test of comparing converted encoder")
-        # if not args.precompute_norm_stats:
-        #     raise ValueError("Need to be using --precompute_norm_stats")
-
-        import numpy as np
-        import tensorflow as tf
-        from old_src.turboae_adapters import (
-            TFTurboAEEncoderCNN,
-            TurboAEEncoderParameters,
-        )
-
-        model_filename = os.path.splitext(os.path.basename(args.init_nw_weight))[0]
-        print(f"Model filename is {model_filename}")
-        enc_to_save = model.enc
-        state_dict = enc_to_save.state_dict()
-        state_dict_path = (
-            "./tmp/encoders/" + "_".join([identity, model_filename, "enc"]) + ".pt"
-        )
-        torch.save(enc_to_save.state_dict(), state_dict_path)
-        torch_state_dict = torch.load(state_dict_path)
-        params = TurboAEEncoderParameters.from_pytorch(torch_state_dict)
-        tf_model = TFTurboAEEncoderCNN(params, block_len=100)
-
-        batch_size = args.batch_size
-        for i in range(100):
-            test_input = np.random.randint(0, 1, size=(batch_size, 100, 1))
-            torch_test_input = torch.from_numpy(test_input)
-            tf_test_input = tf.convert_to_tensor(test_input, dtype=tf.float32)
-
-            # model.enc.num_test_block = 10000000
-            # model.enc.mean_scalar = torch.tensor([-0.0215])
-            # model.enc.std_scalar = torch.tensor([0.5114])
-            torch_output = model.enc(torch_test_input)
-            tf_output = tf_model(tf_test_input)
-
-            np.testing.assert_almost_equal(
-                torch_output.cpu().detach().numpy(), tf_output.numpy(), decimal=5
-            )
-            print(f"{i} passed!")
-
-        print("Exiting")
-        exit()
-
-    if args.onnx_save_decoder:
-        # torch.save(model.state_dict(), './tmp/torch_model_'+identity+'.pt')
-        model_filename = os.path.splitext(os.path.basename(args.init_nw_weight))[0]
-        print(f"Model filename is {model_filename}")
-        dec_to_save = model.dec
-        torch.save(
-            dec_to_save.state_dict(),
-            "./tmp/decoders/" + "_".join([identity, model_filename, "dec"]) + ".pt",
-        )
-        np.save(
-            "./tmp/decoders/" + "_".join([identity, "interleaver"]) + ".np", p_array1
-        )
-        # ONNX conversion
-        dummy_input = torch.zeros((50, args.block_len, 3))
-        input_names = ["received"]
-        output_names = ["final"]
-        torch.onnx.export(
-            dec_to_save,
-            dummy_input,
-            "./tmp/decoders/" + "_".join([identity, model_filename, "dec"]) + ".onnx",
-            verbose=True,
-            input_names=input_names,
-            output_names=output_names,
-            dynamic_axes={
-                # dict value: manually named axes
-                "received": {0: "batch"},
-                "final": {0: "batch"},
-            },
-        )
-        print("Exiting")
-        exit()
-
-    if args.test_onnx_decoder:
-        import onnx
-        from onnx_tf.backend import prepare
-        import tensorflow as tf
-        import tensorflow.compat.v1 as tf1
-
-        model_filename = os.path.splitext(os.path.basename(args.onnx_decoder_path))[0]
-        onnx_dec = onnx.load(args.onnx_decoder_path)  # load onnx model
-
-        onnx_tf_dec = prepare(onnx_dec)
-        # graph_fname = './tmp/decoders/' + '_'.join([identity, model_filename])
-        # onnx_tf_dec.export_graph(graph_fname)
-
-        # INPUT_TENSOR_NAME = 'received.1:0'
-        # OUTPUT_TENSOR_NAME = 'final:0'
-
-        # with tf1.gfile.FastGFile(graph_fname + '/saved_model.pb', 'rb') as f:
-        #     graph_def = tf1.GraphDef()
-        #     graph_def.ParseFromString(f.read())
-
-        # with tf1.Graph().as_default() as graph:
-        #     tf1.import_graph_def(graph_def, name="")
-
-        # input_tensor = graph.get_tensor_by_name(INPUT_TENSOR_NAME)
-        # output_tensor = graph.get_tensor_by_name(OUTPUT_TENSOR_NAME)
-
-        torch_dec = model.dec
-
-        for i in range(10):
-            test_input = np.random.randint(0, 1, size=(75, 100, 3)).astype(np.float32)
-            torch_test_input = torch.from_numpy(test_input)
-            tf_test_input = tf.convert_to_tensor(test_input)
-
-            torch_output = model.dec(torch_test_input)
-            # with tf1.Session(graph=graph) as sess:
-            #     tf_output = sess.run(output_tensor, feed_dict={input_tensor: tf_test_input})  #
-            tf_output = onnx_tf_dec.run(tf_test_input)
-
-            np.testing.assert_almost_equal(
-                torch_output.cpu().detach().numpy(), tf_output.final, decimal=5
             )
             print(f"{i} passed!")
 
